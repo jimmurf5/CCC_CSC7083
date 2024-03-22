@@ -3,5 +3,5 @@
 //Jordan test//
 //Claire test//
 
-ReadMe file is changed from local repository (claire)
+ReadMe file is changed from local repository (Claire)
 
