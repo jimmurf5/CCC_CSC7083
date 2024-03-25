@@ -5,9 +5,8 @@ import java.util.ArrayList;
 public class FieldArea extends Area {
 
 	// Constants for business rules
-	
-	//private static final int MIN_FIELDLENGTH = 10;
-	
+
+	// private static final int MIN_FIELDLENGTH = 10;
 
 	// Instance vars
 
@@ -42,11 +41,11 @@ public class FieldArea extends Area {
 		if (developmentObj == null) {
 			throw new IllegalArgumentException("Development cannot be null");
 		}
-		
+
 		if (developmentObj.getLevel <= this.developmentObj.getLevel) {
 			throw new IllegalArgumentException("Development level needs to increase");
 		}
-		
+
 		this.developmentObj = developmentObj;
 	}
 
@@ -61,17 +60,20 @@ public class FieldArea extends Area {
 	 * 
 	 * @param ownedBy
 	 * @throws IllegalArgumentException if trying to set ownership of FieldArea to
-	 *                                  null
+	 *                                  null or Player already owns this FieldArea
 	 */
 	public void setOwnedBy(Player ownedBy) throws IllegalArgumentException {
 
 		if (ownedBy == null) {
-			throw new IllegalArgumentException("Cannot set FieldArea ownership to null");
+			throw new IllegalArgumentException(vv);
 		}
 
-		this.setdevelopmentObj(NAME OF);
+		if (this.ownedBy != null) {
+			throw new IllegalArgumentException("Another Player already owns this FieldArea");
+		}
+
+		this.setdevelopmentObj();
 		this.ownedBy = ownedBy;
 	}
-	
-	
+
 }
