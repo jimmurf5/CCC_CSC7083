@@ -10,11 +10,6 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import p3.Accommodation;
-import p3.Type;
-import smartHome.DeviceSearch;
-import smartHome.SmartRadiators;
-
 
 class TestField {
 	
