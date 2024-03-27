@@ -38,14 +38,21 @@ public class Game {
 		 * @param squareOrder
 		 * @param fieldOrder
 		 */
-		public Game(ArrayList<Player> players, ArrayList<Player> playerOrder, int maxNoPlayers, int minNoPlayers,
-				ArrayList<Area> squareOrder, ArrayList<Field> fieldOrder) {
+		public Game(ArrayList<Player> players, ArrayList<Player> playerOrder, int maxNoPlayers, int minNoPlayers, ArrayList<Area> squareOrder, ArrayList<Field> fieldOrder) {
 			this.setPlayers(players);
 			this.setPlayerOrder(playerOrder);
 			this.setMaxNoPlayers(maxNoPlayers);
 			this.setMinNoPlayers(minNoPlayers);
 			this.setSquareOrder(squareOrder);
 			this.setFieldOrder(fieldOrder);
+		}
+		
+		//Driver
+		
+		public static void main(String[] args) {
+			
+			Game game = new Game(null, null, MIN_PLAYER_NUMBER, MAX_PLAYER_NUMBER, null, null);
+			
 		}
 		
 		//Getters & Setters
@@ -83,8 +90,8 @@ public class Game {
 			if (players == null) {
 				throw new IllegalArgumentException("Players array cannot be empty");
 			} else {
-				Collections.shuffle(players);//expand on this?
-				this.playerOrder = players;
+				Collections.shuffle(players);
+				this.playerOrder = players;//expand on this?
 			}
 			
 		}
@@ -172,12 +179,14 @@ public class Game {
 		 */
 		public void handleTurn(Player player) {
 			
-			System.out.println("It's " +player.playerName+"'s turn!");
+			System.out.println("It's " +player.getPlayerName()+"'s turn!");
 			System.out.println(showOptions());
 			String input = sc.next();
 			handleUserInput(input);
 			//handleActions(player, area);
-			playerOrder.next();
+			int nextIndex = (getPlayerOrder().indexOf(player) + 1) % getPlayerOrder().size(); //cycles round to start of playerOrder if end is reached
+		    Player nextPlayer = getPlayerOrder().get(nextIndex);
+		    handleTurn(nextPlayer);
 		}
 		
 		/**
@@ -214,7 +223,7 @@ public class Game {
 		}
 		
 		/**
-		 * Handles a player's input when entered during their turn
+		 * Handles a player's input when entered during their turn (at the start)
 		 * @param input
 		 */
 		public void handleUserInput(String input) {
@@ -239,7 +248,7 @@ public class Game {
 		}
 		
 		/**
-		 * Displays the options a player has available to them
+		 * Displays the options a player has available to them (at the start of turn)
 		 * @return options
 		 */
 		public String showOptions() {
@@ -255,16 +264,24 @@ public class Game {
 		 * Registers a new player and adds them to the ArrayList players
 		 * @param players
 		 * @return players
+		 * @throws IllegalArgumentException if a duplicate playerName exists in players
+		 * @throws IllegalArgumentException if the maximum number of players has already been reached
 		 */
 		public ArrayList<Player> registerNewPlayer(ArrayList<Player> players){
 			
 			String playerName;
 			playerName = sc.next();
 			
-			Player newPlayer = new Player(playerName);
+			 for (Player player : players) {
+			        if (player.getPlayerName().equals(playerName)) {
+			            throw new IllegalArgumentException("Player name already exists, please choose a different name.");
+			        }
+			    }
+			
+			Player newPlayer = new Player(playerName, /*INITIAL_RESOURCES, currentArea*/); //not visible
 			if(players.size() < maxNoPlayers) {
 				players.add(newPlayer);
-				System.out.println("Welcome, " +newPlayer.playerName);
+				System.out.println("Welcome, " +newPlayer.getPlayerName());
 			} else {
 				throw new IllegalArgumentException("Max player count has been reached");
 			}	
