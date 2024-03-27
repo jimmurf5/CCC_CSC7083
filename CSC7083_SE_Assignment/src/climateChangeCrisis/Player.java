@@ -27,14 +27,10 @@ public class Player {
     private int resources;
     private Area currentArea; 
     private boolean quitGame;
-    private boolean bankrupt;
+    //removed isBankrupt & Gs&Ss
     
     
-    //default constructor
-    
-    public Player() {
-    	
-    }
+    //removed default constructor
 
 
     //constructor with args 
@@ -46,12 +42,11 @@ public class Player {
 	 * @param quitGame
 	 * @param bankrupt
 	 */
-	public Player(String playerName, int resources, Area currentArea) {
+	public Player(String playerName, Area currentArea) {
 		this.setPlayerName(playerName);
-		this.resources = INITIAL_RESOURCES;
+		this.setResources(INITIAL_RESOURCES);//changed to link to setter
 		this.setCurrentArea(currentArea);
 		this.quitGame = false; // Player starts with the intention to play the game
-		this.bankrupt = false; // Player starts without being bankrupt
 		
 	}
 	
@@ -95,13 +90,11 @@ public class Player {
 	 */
 	public void setResources(int resources){
 		
-		
 		if (resources < 0) {
-			this.bankrupt = true; //player goes bankrupt if resources fall below zero 
-			
-		} else {
-			this.bankrupt = false; //player not bankrupt if resources are 0 or above 
-		}
+			//player goes bankrupt if resources fall below zero 
+			//trigger an endGame() method that calculates the standings and informs the user
+		} 
+		
 		this.resources = resources; 
 	}
 
@@ -144,21 +137,7 @@ public class Player {
 	}
 
 
-	/**
-	 * @return the bankrupt
-	 */
-	public boolean isBankrupt() {
-		return bankrupt;
-	}
-
-	/** IS THIS SETTER NEEDED - Ultimately this is determined by resources level in SetResources
-	 * @param bankrupt the bankrupt to set
-	 
-	public void setBankrupt(boolean bankrupt) {
-	    this.bankrupt = bankrupt;
-	}
 	
-	*/
 	
 	
 	
