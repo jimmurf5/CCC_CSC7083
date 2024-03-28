@@ -7,285 +7,385 @@ import java.util.Scanner;
 
 public class Game {
 
-		//Imported tools
-	
+	// Imported tools
+
+	Scanner sc = new Scanner(System.in);
+	Random rand = new Random();
+
+	// Constants for business rules
+
+	private static final int MIN_PLAYER_NUMBER = 1;
+	private static final int MAX_PLAYER_NUMBER = 4;
+
+	// Instance vars
+
+	private ArrayList<Player> players;
+	private ArrayList<Area> squareOrder;
+	private ArrayList<Field> fields;
+	// removed fieldOrder,playerOrder, min & max no of Players- none of these
+	// instance vars and Gs & Ss are required
+	// changes the constructor also
+
+	// Constructor
+
+	public Game(ArrayList<Player> players, ArrayList<Area> squareOrder, ArrayList<Field> fields) {
+		this.setPlayers(players);
+		this.setSquareOrder(squareOrder);
+		this.setFields(fields);
+	}
+
+	// Driver
+
+	public static void main(String[] args) {
+		// Setting up all Game objects
+		// Developments x 6
+		ArrayList<Development> developmentsArrayL = createDevelopments();
+
+		// areas arrayLists per Field (2 x 2 and 2 x 3 areas)
+		ArrayList<Area> waterFoodAreaArrayL = createWFFieldAreas(developmentsArrayL.get(0));
+		ArrayList<Area> bioLossAreaArrayL = createBLFieldAreas(developmentsArrayL.get(0));
+		ArrayList<Area> risingSeasAreaArrayL = createRSFieldAreas(developmentsArrayL.get(0));
+		ArrayList<Area> ExtremeWeatherAreaArrayL = createEWFieldAreas(developmentsArrayL.get(0));
+
+		// 4 Fields (passing in the areas arrayLists)
+		Field waterFoodShortage = new Field("Water and Food Shortage", waterFoodAreaArrayL, 5, 7);
+		Field biodiversityLoss = new Field("Biodiversity Loss", bioLossAreaArrayL, 5, 7);
+		Field risingSeas = new Field("Rising Seas", risingSeasAreaArrayL, 2, 4);
+		Field extremeWeather = new Field("Extreme Weather", ExtremeWeatherAreaArrayL, 8, 10);
+
+		ArrayList<Field> fields = new ArrayList<>();
+		fields.add(waterFoodShortage);
+		fields.add(biodiversityLoss);
+		fields.add(risingSeas);
+		fields.add(extremeWeather);
+
+		// Special areas (blank and GO)
+		SpecialArea goSquare = new SpecialArea("GO Square", 5);
+		SpecialArea blankSquare = new SpecialArea("BLANK Square", 0);
+
+		// create squareOrder exactly as per the last drawing order
+		ArrayList<Area> squaresOrdered = createSquareOrder(goSquare, waterFoodAreaArrayL, bioLossAreaArrayL,
+				blankSquare, risingSeasAreaArrayL, ExtremeWeatherAreaArrayL);
+
+		// registration method before game constructor to create Players list (already
+		// randomised & presented back)
+		ArrayList<Player> playersOrdered = registerPlayers(goSquare);
+
+		// pass them into Game constructor
+		Game game = new Game(playersOrdered, squaresOrdered, fields);
+
+		/** CHRIS AND ALEX COMMENTS **/
+
+		// Need a check/loop construct for checking if at least 1 field is owned by a player before showing MAKE DEVELOPMENT OPTION
+		// option to make a Development should only be displayed to user when they own at least 1 FIELD.
+		// This is the first check that needs made on next user's turn
+		// options for Take Turn need broken down.
+		// will need to handle user input methods for makeDevelopment- sequence in itself, check the diagrams
+
+		// need to have an endGame() method which gets called/triggered when player
+		// Quits or resources drop to <0 (triggered in setResources in Player class)
+
+		// Need a check to see whether player has passed/landed on GO SQUARE. 
+		// Get index of currentArea in squareOrder arrayList and add the diceRoll to it-> if >12 trigger the passGo method and makes
+		// changes to player balances, informing them
+
+		// Method for update player currentSquare
+		// Method for checking currentSquare attributes (development level etc-> cost
+		// multipliers x costDonation OR costBuy options)
+
+		// Method for updating player balances and communicating to players
+
+		// COMMS MESSAGES
+		// Messages for specialArea will be simple and always the same and set in the specialArea class
+		// messages for FieldAreas will be individually customised and in FieldArea class for each, when dev level is 1
+		// messages for FieldAreas will be generic for FieldAreas depending on their dev level- Development class needs fleshed out
+		// conditional logic based on currentArea attributes
+
+		// offer unwantedSquare method will also need implemented
+		// ***SEQUENCE DIAGRAMS WILL HELP WITH ALL OF THE ABOVE***
+	}
+
+	// Getters & Setters
+
+	public ArrayList<Player> getPlayers() {
+		return players;
+	}
+
+	// ADD VALIDATION FOR MIN AND MAX NO OF PLAYERS USING CONSTANTS IN REGISTRATION
+	/**
+	 * 
+	 * @param players
+	 * @throws IllegalArgumentException if a empty array is passed in
+	 */
+	public void setPlayers(ArrayList<Player> players) {
+
+		if (players == null) {
+			throw new IllegalArgumentException("Players array cannot be null");
+		} else {
+			this.players = players;
+		}
+
+	}
+
+	public ArrayList<Area> getSquareOrder() {
+		return squareOrder;
+	}
+
+	/**
+	 * 
+	 * @param squareOrder
+	 * @throws IllegalArgumentException if a empty array is passed in
+	 */
+	public void setSquareOrder(ArrayList<Area> squareOrder) {
+
+		if (squareOrder == null) {
+			throw new IllegalArgumentException("Square Order array cannot be empty");
+		} else {
+			this.squareOrder = squareOrder;
+		}
+	}
+
+	public ArrayList<Field> getFields() {
+		return fields;
+	}
+
+	public void setFields(ArrayList<Field> fields) {
+		this.fields = fields;
+	}
+
+	// Methods
+
+	/**
+	 * Handles a player's turn when taken
+	 * 
+	 * @param player
+	 */
+	public void handleTurn(Player player) {
+
+		System.out.println("It's " + player.getPlayerName() + "'s turn!");
+		System.out.println(showOptions());
+		String input = sc.next();
+		handleUserInput(input);
+		// handleActions(player, area);
+		// int nextIndex = (getPlayerOrder().indexOf(player) + 1) %
+		// getPlayerOrder().size(); //cycles round to start of playerOrder if end is
+		// reached
+		// Player nextPlayer = getPlayerOrder().get(nextIndex);
+		// handleTurn(nextPlayer);
+	}
+
+	/**
+	 * Rolls two dice to determine where a player moves on the board
+	 * 
+	 * @return result
+	 */
+	public int rollDice() {
+
+		int die1, die2, result;
+		die1 = rand.nextInt(6) + 1;
+		die2 = rand.nextInt(6) + 1;
+		result = die1 + die2;
+		System.out.println("First die shows a " + die1);
+		System.out.println("Second die shows a " + die2);
+		System.out.println("You move " + result + " spaces!");
+		return result;
+	}
+
+	/**
+	 * Handles a player's actions after landing on an area
+	 * 
+	 * @param player
+	 * @param area
+	 */
+	public void handleActions(Player player, Area area) {
+		// Player shown info on area landed on
+
+		// If area.ownedByPlayer = true, show obligation info (Player resource exchange)
+		// Else prompt player for decision to buy or offer unwanted square
+
+		// If player buys square, show buy info, set ownership to player (Player
+		// resource change)
+		// Else getPlayerOrder and options are shown to next player if
+		// hasSufficientResources = true
+		// If this player buys square, show buy info, set ownership to this player
+		// (Player resource change)
+		// Else getPlayerOrder again and repeat until playerOrder is exhausted or area
+		// is bought
+	}
+
+	/**
+	 * Handles a player's input when entered during their turn (at the start)
+	 * 
+	 * @param input
+	 */
+	public void handleUserInput(String input) {
+
+		switch (input) {
+		case "1":
+			System.out.println("Rolling dice...");
+			// setCurrentArea(rollDice(), squareOrder)
+			break;
+		case "2":
+			System.out.println("Buying development...");
+			// makeDevelopment();
+			break;
+		case "3":
+			System.out.println("Quitting game...");
+			// endGame();
+			break;
+		default:
+			System.out.println("Please enter a valid option");
+			break;
+		}
+	}
+
+	/**
+	 * Displays the options a player has available to them (at the start of turn)
+	 * 
+	 * @return options
+	 */
+	public String showOptions() {
+
+		String options = "Choose an option:" + "\n 1) Roll dice" + "\n 2) Buy Development" + "\n 3) Quit Game";
+		return options;
+	}
+
+	/**
+	 * Registers a new player and adds them to the ArrayList players
+	 * 
+	 * @param players
+	 * @return players
+	 * @throws IllegalArgumentException if a duplicate playerName exists in players
+	 * @throws IllegalArgumentException if the maximum number of players has already
+	 *                                  been reached
+	 */
+	public static ArrayList<Player> registerPlayers(Area goSquare) {
 		Scanner sc = new Scanner(System.in);
-		Random rand = new Random();
-		
-		//Constants for business rules
-		
-		private static final int MIN_PLAYER_NUMBER = 1;
-		private static final int MAX_PLAYER_NUMBER = 4;
-	
-		//Instance vars
-	
-		private ArrayList<Player> players;
-		private ArrayList<Player> playerOrder;
-		private int maxNoPlayers;
-		private int minNoPlayers;
-		private ArrayList<Area> squareOrder;
-		private ArrayList<Field> fieldOrder;
-		
-		
-		//Constructor
-		
-		/**
-		 * Constructor for Game
-		 * @param players
-		 * @param playerOrder
-		 * @param maxNoPlayers
-		 * @param minNoPlayers
-		 * @param squareOrder
-		 * @param fieldOrder
-		 */
-		public Game(ArrayList<Player> players, ArrayList<Player> playerOrder, int maxNoPlayers, int minNoPlayers, ArrayList<Area> squareOrder, ArrayList<Field> fieldOrder) {
-			this.setPlayers(players);
-			this.setPlayerOrder(playerOrder);
-			this.setMaxNoPlayers(maxNoPlayers);
-			this.setMinNoPlayers(minNoPlayers);
-			this.setSquareOrder(squareOrder);
-			this.setFieldOrder(fieldOrder);
-		}
-		
-		//Driver
-		
-		public static void main(String[] args) {
-			
-			Game game = new Game(null, null, MIN_PLAYER_NUMBER, MAX_PLAYER_NUMBER, null, null);
-			
-		}
-		
-		//Getters & Setters
+		ArrayList<Player> players = new ArrayList<>();
 
-		public ArrayList<Player> getPlayers() {
-			return players;
+		String playerName;
+		int noPlayers;
+
+		System.out.println("Please enter number of players");
+		noPlayers = sc.nextInt();
+
+		while ((noPlayers < MIN_PLAYER_NUMBER) || (noPlayers > MAX_PLAYER_NUMBER)) {
+			System.out.printf("Number of players needs to be between %d and %d%n", MIN_PLAYER_NUMBER,
+					MAX_PLAYER_NUMBER);
+			System.out.println("Please enter number of players");
+			noPlayers = sc.nextInt();
+			sc.nextInt();
 		}
 
-		/**
-		 * 
-		 * @param players
-		 * @throws IllegalArgumentException if a empty array is passed in
-		 */
-		public void setPlayers(ArrayList<Player> players) {
-			
-			if (players == null) {
-				throw new IllegalArgumentException("Players array cannot be null");
+		while (players.size() < noPlayers) {
+			if (players.size() == 0) {
+				System.out.println("Please enter first player name:");
 			} else {
-				this.players = players;
+				System.out.println("Please enter next player name:");
 			}
-			
-		}
 
-		public ArrayList<Player> getPlayerOrder() {
-			return playerOrder;
-		}
+			playerName = sc.nextLine().trim();
+			for (Player player : players) {
+				if (player.getPlayerName().equals(playerName)) {
+					System.out.println("Player name already exists, please choose a different name.");
+					sc.nextLine();
+					continue;
+				} else {
+					Player newPlayer = new Player(playerName, goSquare);
+					players.add(newPlayer);
+					System.out.printf("%s has been successfully registered as a player!%n", newPlayer.getPlayerName());
+					sc.nextLine();
+				}
 
-		/**
-		 * 
-		 * @param players
-		 * @throws IllegalArgumentException if a empty array is passed in
-		 */
-		public void setPlayerOrder(ArrayList<Player> players) {
-			
-			if (players == null) {
-				throw new IllegalArgumentException("Players array cannot be empty");
-			} else {
-				Collections.shuffle(players);
-				this.playerOrder = players;//expand on this?
+				System.out.printf(
+						"All %d players have been successfully registered!  Welcome to Climate Change Crisis...%n",
+						players.size());
 			}
-			
+
+		}
+		Collections.shuffle(players);
+		System.out.println("Player order for this game:");
+		for (Player player : players) {
+			System.out.printf("Player %d: %s%n", players.indexOf(player), player.getPlayerName());
 		}
 
-		public int getMaxNoPlayers() {
-			return maxNoPlayers;
-		}
+		return players;
 
-		/**
-		 * 
-		 * @param maxNoPlayers
-		 * @throws IllegalArgumentException if an invalid number of players is entered
-		 */
-		public void setMaxNoPlayers(int maxNoPlayers) {
-			
-			if(maxNoPlayers > MAX_PLAYER_NUMBER || maxNoPlayers < MIN_PLAYER_NUMBER) {
-				throw new IllegalArgumentException("Player count must be between 1-4");
-			}   else {
-				this.maxNoPlayers = maxNoPlayers;
-			}
-			
-			
-			
-		}
+	}
 
-		public int getMinNoPlayers() {
-			return minNoPlayers;
-		}
+	private static ArrayList<Development> createDevelopments() {
+		ArrayList<Development> developments = new ArrayList<>();
+		developments.add(new Development(1, "Unowned Square", "Square is currently available!", 1.00));
+		developments.add(new Development(2, "Owned Square", "Square already owned by player", 1.20));
+		developments
+				.add(new Development(3, "Minor Development 1", "Create a Sustainability Educational Programme", 1.40));
+		developments.add(new Development(4, "Minor Development 2", "Build an Eco Learning Centre", 1.60));
+		developments
+				.add(new Development(5, "Minor Development 3", "Establish a Green Community Action Initiative", 1.80));
+		developments.add(new Development(6, "Major Development", "Form a Global Climate Accord", 3.00));
 
-		/**
-		 * 
-		 * @param minNoPlayers
-		 * @throws IllegalArgumentException if an invalid number of players is entered
-		 */
-		public void setMinNoPlayers(int minNoPlayers) {
-			
-			if(minNoPlayers > MAX_PLAYER_NUMBER || minNoPlayers < MIN_PLAYER_NUMBER) {
-				throw new IllegalArgumentException("Player count must be between 1-4");
-			}   else {
-				this.minNoPlayers = minNoPlayers;
-			}
-			
-		}
+		return developments;
 
-		public ArrayList<Area> getSquareOrder() {
-			return squareOrder;
-		}
+	}
 
-		/**
-		 * 
-		 * @param squareOrder
-		 * @throws IllegalArgumentException if a empty array is passed in
-		 */
-		public void setSquareOrder(ArrayList<Area> squareOrder) {
-			
-			if (squareOrder == null) {
-				throw new IllegalArgumentException("Square Order array cannot be empty");
-			} else {
-				this.squareOrder = squareOrder;
-			}
-		}
+	private static ArrayList<Area> createWFFieldAreas(Development devObj) {
+		ArrayList<Area> fieldAreas = new ArrayList<>();
+		fieldAreas.add(new FieldArea("Wellspring Woe", devObj));
+		fieldAreas.add(new FieldArea("Parched Pastures", devObj));
+		fieldAreas.add(new FieldArea("Harvest Havoc", devObj));
 
-		public ArrayList<Field> getFieldOrder() {
-			return fieldOrder;
-		}
+		return fieldAreas;
 
-		/**
-		 * 
-		 * @param fieldOrder
-		 * @throws IllegalArgumentException if a empty array is passed in
-		 */
-		public void setFieldOrder(ArrayList<Field> fieldOrder) {
-			if (fieldOrder == null) {
-				throw new IllegalArgumentException("Field Order array cannot be empty");
-			} else {
-				this.fieldOrder = fieldOrder;
-			}
-		}
-		
-		//Methods
-		
-		/**
-		 * Handles a player's turn when taken
-		 * @param player
-		 */
-		public void handleTurn(Player player) {
-			
-			System.out.println("It's " +player.getPlayerName()+"'s turn!");
-			System.out.println(showOptions());
-			String input = sc.next();
-			handleUserInput(input);
-			//handleActions(player, area);
-			int nextIndex = (getPlayerOrder().indexOf(player) + 1) % getPlayerOrder().size(); //cycles round to start of playerOrder if end is reached
-		    Player nextPlayer = getPlayerOrder().get(nextIndex);
-		    handleTurn(nextPlayer);
-		}
-		
-		/**
-		 * Rolls two dice to determine where a player moves on the board
-		 * @return result
-		 */
-		public int rollDice() {
-			
-			int die1, die2, result;
-			die1 = rand.nextInt(6)+1;
-			die2 = rand.nextInt(6)+1;
-			result = die1 + die2;
-			System.out.println("First die shows a " +die1);
-			System.out.println("Second die shows a " +die2);
-			System.out.println("You move " +result +" spaces!");
-			return result;
-		}
-		
-		/**
-		 * Handles a player's actions after landing on an area
-		 * @param player
-		 * @param area
-		 */
-		public void handleActions(Player player, Area area) {
-			//Player shown info on area landed on 
-			
-			//If area.ownedByPlayer = true, show obligation info (Player resource change)
-			//	Else prompt player for decision to buy or offer unwanted square
-			
-			//If player buys square, show buy info, set ownership to player (Player resource change)
-			//	Else getPlayerOrder and options are shown to next player if hasSufficientResources = true
-			//If this player buys square, show buy info, set ownership to this player (Player resource change)
-			//	Else getPlayerOrder again and repeat until playerOrder is exhausted or area is bought
-		}
-		
-		/**
-		 * Handles a player's input when entered during their turn (at the start)
-		 * @param input
-		 */
-		public void handleUserInput(String input) {
-			
-			 switch (input) {
-		        case "1":
-		            System.out.println("Rolling dice...");
-		            //setCurrentArea(rollDice(), squareOrder)
-		            break;
-		        case "2":
-		            System.out.println("Buying development...");
-		            //makeDevelopment();
-		            break;
-		        case "3":
-		            System.out.println("Quitting game...");
-		            //endGame();
-		            break;
-		        default:
-		            System.out.println("Please enter a valid option");
-		            break;
-		    }
-		}
-		
-		/**
-		 * Displays the options a player has available to them (at the start of turn)
-		 * @return options
-		 */
-		public String showOptions() {
-			 
-			String options = "Choose an option:"
-			 		+ "\n 1) Roll dice"
-			 		+ "\n 2) Buy Development"
-			 		+ "\n 3) Quit Game";
-			return options;
-		}
-		
-		/**
-		 * Registers a new player and adds them to the ArrayList players
-		 * @param players
-		 * @return players
-		 * @throws IllegalArgumentException if a duplicate playerName exists in players
-		 * @throws IllegalArgumentException if the maximum number of players has already been reached
-		 */
-		public ArrayList<Player> registerNewPlayer(ArrayList<Player> players){
-			
-			String playerName;
-			playerName = sc.next();
-			
-			 for (Player player : players) {
-			        if (player.getPlayerName().equals(playerName)) {
-			            throw new IllegalArgumentException("Player name already exists, please choose a different name.");
-			        }
-			    }
-			
-			Player newPlayer = new Player(playerName, /*INITIAL_RESOURCES, currentArea*/); //not visible
-			if(players.size() < maxNoPlayers) {
-				players.add(newPlayer);
-				System.out.println("Welcome, " +newPlayer.getPlayerName());
-			} else {
-				throw new IllegalArgumentException("Max player count has been reached");
-			}	
-			return players;
-		}
-					
+	}
+
+	private static ArrayList<Area> createBLFieldAreas(Development devObj) {
+		ArrayList<Area> fieldAreas = new ArrayList<>();
+		fieldAreas.add(new FieldArea("Intruder Infestation", devObj));
+		fieldAreas.add(new FieldArea("Deforestation Disaster", devObj));
+		fieldAreas.add(new FieldArea("Silent Species", devObj));
+
+		return fieldAreas;
+
+	}
+
+	private static ArrayList<Area> createRSFieldAreas(Development devObj) {
+		ArrayList<Area> fieldAreas = new ArrayList<>();
+		fieldAreas.add(new FieldArea("Seashore Sorrow", devObj));
+		fieldAreas.add(new FieldArea("Coastal Catastrophe", devObj));
+
+		return fieldAreas;
+
+	}
+
+	private static ArrayList<Area> createEWFieldAreas(Development devObj) {
+		ArrayList<Area> fieldAreas = new ArrayList<>();
+		fieldAreas.add(new FieldArea("Hurricane Hit", devObj));
+		fieldAreas.add(new FieldArea("Wicked Wildfire", devObj));
+
+		return fieldAreas;
+
+	}
+
+	private static ArrayList<Area> createSquareOrder(SpecialArea goSquare, ArrayList<Area> waterFoodAreaArrayL,
+			ArrayList<Area> bioLossAreaArrayL, SpecialArea blankSquare, ArrayList<Area> risingSeasAreaArrayL,
+			ArrayList<Area> extremeWeatherAreaArrayL) {
+
+		ArrayList<Area> squareOrder = new ArrayList<>();
+
+		squareOrder.add(goSquare);
+		squareOrder.add(waterFoodAreaArrayL.get(0));
+		squareOrder.add(waterFoodAreaArrayL.get(1));
+		squareOrder.add(waterFoodAreaArrayL.get(2));
+		squareOrder.add(bioLossAreaArrayL.get(0));
+		squareOrder.add(bioLossAreaArrayL.get(1));
+		squareOrder.add(bioLossAreaArrayL.get(2));
+		squareOrder.add(blankSquare);
+		squareOrder.add(risingSeasAreaArrayL.get(0));
+		squareOrder.add(risingSeasAreaArrayL.get(1));
+		squareOrder.add(extremeWeatherAreaArrayL.get(0));
+		squareOrder.add(extremeWeatherAreaArrayL.get(1));
+
+		return squareOrder;
+	}
+
 }

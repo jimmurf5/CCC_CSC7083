@@ -23,7 +23,7 @@ public class Development {
 	private int level;
 	private String name;
 	private String description;
-	private float costMultiplier;
+	private double costMultiplier;
 
 	
 	//default constructor 
@@ -33,7 +33,7 @@ public class Development {
 	
 	
 	// Constructor with args
-	public Development(int level, String name, String description, float costMultiplier) {
+	public Development(int level, String name, String description, double costMultiplier) {
 		this.setLevel(level);
 		this.setName(name);
 		this.setDescription(description);
@@ -84,7 +84,7 @@ public class Development {
 	    }
 	}
 
-	public float getCostMultiplier() {
+	public double getCostMultiplier() {
 		return costMultiplier;
 	}
 

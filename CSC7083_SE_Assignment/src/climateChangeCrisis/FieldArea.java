@@ -42,7 +42,7 @@ public class FieldArea extends Area {
 			throw new IllegalArgumentException("Development cannot be null");
 		}
 
-		if (developmentObj.getLevel <= this.developmentObj.getLevel) {
+		if (developmentObj.getLevel() <= this.developmentObj.getLevel()) {
 			throw new IllegalArgumentException("Development level needs to increase");
 		}
 
@@ -62,17 +62,21 @@ public class FieldArea extends Area {
 	 * @throws IllegalArgumentException if trying to set ownership of FieldArea to
 	 *                                  null or Player already owns this FieldArea
 	 */
-	public void setOwnedBy(Player ownedBy) throws IllegalArgumentException {
+	public void setOwnedBy(Player ownedBy, Development developmentObj) throws IllegalArgumentException {
 
 		if (ownedBy == null) {
-			throw new IllegalArgumentException(vv);
+			throw new IllegalArgumentException("Cannot set owned by to null");
 		}
 
 		if (this.ownedBy != null) {
 			throw new IllegalArgumentException("Another Player already owns this FieldArea");
 		}
+		
+		if (developmentObj.getLevel() != 2) {
+			throw new IllegalArgumentException("Wrong Development object passed in- needs to be Level 2");
+		}
 
-		this.setdevelopmentObj();
+		this.setdevelopmentObj(developmentObj);
 		this.ownedBy = ownedBy;
 	}
 
