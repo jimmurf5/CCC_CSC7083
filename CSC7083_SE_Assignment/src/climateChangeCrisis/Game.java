@@ -76,17 +76,21 @@ public class Game {
 
 		/** CHRIS AND ALEX COMMENTS **/
 
-		// Need a check/loop construct for checking if at least 1 field is owned by a player before showing MAKE DEVELOPMENT OPTION
-		// option to make a Development should only be displayed to user when they own at least 1 FIELD.
+		// Need a check/loop construct for checking if at least 1 field is owned by a
+		// player before showing MAKE DEVELOPMENT OPTION
+		// option to make a Development should only be displayed to user when they own
+		// at least 1 FIELD.
 		// This is the first check that needs made on next user's turn
 		// options for Take Turn need broken down.
-		// will need to handle user input methods for makeDevelopment- sequence in itself, check the diagrams
+		// will need to handle user input methods for makeDevelopment- sequence in
+		// itself, check the diagrams
 
 		// need to have an endGame() method which gets called/triggered when player
 		// Quits or resources drop to <0 (triggered in setResources in Player class)
 
-		// Need a check to see whether player has passed/landed on GO SQUARE. 
-		// Get index of currentArea in squareOrder arrayList and add the diceRoll to it-> if >12 trigger the passGo method and makes
+		// Need a check to see whether player has passed/landed on GO SQUARE.
+		// Get index of currentArea in squareOrder arrayList and add the diceRoll to
+		// it-> if >12 trigger the passGo method and makes
 		// changes to player balances, informing them
 
 		// Method for update player currentSquare
@@ -96,9 +100,12 @@ public class Game {
 		// Method for updating player balances and communicating to players
 
 		// COMMS MESSAGES
-		// Messages for specialArea will be simple and always the same and set in the specialArea class
-		// messages for FieldAreas will be individually customised and in FieldArea class for each, when dev level is 1
-		// messages for FieldAreas will be generic for FieldAreas depending on their dev level- Development class needs fleshed out
+		// Messages for specialArea will be simple and always the same and set in the
+		// specialArea class
+		// messages for FieldAreas will be individually customised and in FieldArea
+		// class for each, when dev level is 1
+		// messages for FieldAreas will be generic for FieldAreas depending on their dev
+		// level- Development class needs fleshed out
 		// conditional logic based on currentArea attributes
 
 		// offer unwantedSquare method will also need implemented
@@ -212,36 +219,115 @@ public class Game {
 		// Else getPlayerOrder again and repeat until playerOrder is exhausted or area
 		// is bought
 	}
-	
-	
-	public void offerDevOpportunyIfAvailable (Player player, ArrayList<Field> fields) {
-		ArrayList<Field> results = new ArrayList<>(); // make an empty list to handle any matches, i.e. any fields owned by player
-		//iterate through fields arraylist to check if any fields are owned by the player
-		//if so add to results
-		for(Field aField : fields) {
-			if(aField.getownedBy()==(player)) {
+
+	/**
+	 * this method gives a player the opportunity to decide weather or not to make a development decision
+	 * after first checking if the player is eligible to make a development decision
+	 * 
+	 * @param player, an object of type player
+	 * @param fields, an arraylist of objects of type Field
+	 * @throws IllegalArgumentException if the player is null, or if the arraylist is null or empty
+	 */
+	public void offerDevOpportunyIfAvailable(Player player, ArrayList<Field> fields) throws IllegalArgumentException {
+		// some validation first
+		if (fields == null) {
+			throw new IllegalArgumentException("The list was null, that is invalid.");
+		} else if (fields.isEmpty()) {
+			throw new IllegalArgumentException("The list was empty, that is not valid.");
+		} else if (player == null) {
+			throw new IllegalArgumentException("The player was null, that is not valid.");
+		}
+		ArrayList<Field> results = new ArrayList<>(); // make an empty list to handle any matches, i.e. any fields owned
+														// by player
+		// iterate through fields arraylist to check if any fields are owned by the
+		// player
+		// if so add to results
+		for (Field aField : fields) {
+			if (aField.getownedBy() == (player)) {
 				results.add(aField);
 			}
-			
-		if(results.isEmpty()) {
-			//the player is not in ownership of any field and hence cannot develop
-			//don't necessarily need to display this message, TEAM TO DISCUSS
-			System.out.println("You are not in ownership of any field and hence you cannot make a development.");
-		}else {
-			//the player is in ownership of one or more fields and has a development decision to make
-			//first lets check if the player is in ownership of only one field
-			if(results.size()==1) {
-				System.out.printf("Congratulations you are in ownership of %s", results.get(0).getFieldName());
-				System.out.println("Would you like to make a development?");
-				
-			}else {
-				System.out.println("You are in ownership of more than one field.");
-			
+
+			if (results.isEmpty()) {
+				// the player is not in ownership of any field and hence cannot develop
+				// don't necessarily need to display this message, TEAM TO DISCUSS
+				System.out.println("You are not in ownership of any field and hence you cannot make a development.");
+			} else {
+				// the player is in ownership of one or more fields and has a development
+				// decision to make
+				System.out.println("You are in ownership of one or more fields.");
+				// results.get(0).getFieldName());
+				String playerResponse = sc.nextLine();
+
+				do {
+					System.out.println("Would you like to make a development?");
+					System.out.println("Select Y for yes or No for no, all other inputs are invalid");
+					if (playerResponse.toLowerCase().equals("y")) {
+						// the player wants to make a development
+						makeDevelopment(player, results);
+					} else if (playerResponse.toLowerCase().equals("n")) {
+						System.out.println("You have choosen not to make a development.");
+					}
+				} while (!playerResponse.toLowerCase().equals("y") || !playerResponse.toLowerCase().equals("n"));
 			}
-			
 		}
-			
-		
+	}
+	
+	public void makeDevelopment(Player player, ArrayList<Field> fields) throws IllegalArgumentException {
+		// some validation first
+		if (fields == null) {
+			throw new IllegalArgumentException("The list was null, that is invalid.");
+		} else if (fields.isEmpty()) {
+			throw new IllegalArgumentException("The list was empty, that is not valid.");
+		} else if (player == null) {
+			throw new IllegalArgumentException("The player was null, that is not valid.");
+		}
+		// first lets check if the player is in ownership of only one field
+		if(fields.size()==1) {
+			//the player owns only one field, lets store it in a var
+			Field oneField = fields.get(0);
+			 System.out.printf("Congratulations you are in ownership of %s%n", oneField.getFieldName());
+			 System.out.println("It contains the following areas:");
+			 //iterate through the areas within the one field that the player owns and list them for the player
+			 //using the index of the area object in the area arraylist plus one! as the number in the menu system
+			 for(Area area : oneField.getAreas()) {
+				 System.out.printf("%d. %s%n", oneField.getAreas().indexOf(area)+1, area.getAreaName());
+			 }
+			 int playerResponse = sc.nextInt();
+			//I have 2 switches in here guys because I dont know if there are going to be 2 or 3 areas in the list. Maybe somebody can think of a more elegant solution
+					System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
+					
+					if(oneField.getAreas().size() == 2) {
+						switch(playerResponse) {
+						case 1:
+							//dev one
+							break;
+						case 2:
+							//dev two
+						break;
+						default:
+							System.out.println("You are a clown");
+					}
+					}else if(oneField.getAreas().size() == 3) {
+						switch(playerResponse) {
+						case 1:
+							//dev one
+							break;
+						case 2:
+							//dev two
+						break;
+						case 3:
+							//dev three
+						default:
+							System.out.println("You are a clown");
+					}
+				}
+		}else {
+			System.out.println("You are the owner of more than one field. You must choose which one you wish to develop.");
+			//iterate through the fields within fields arraylist for the player. so player can select a field to develop that they own
+			 //using the index of the area object in the area arraylist plus one! as the number in the menu system
+			 for(Field field : fields) {
+				 System.out.printf("%d. %s%n", fields.indexOf(field), field.getFieldName());
+			 }
 		}
 	}
 
