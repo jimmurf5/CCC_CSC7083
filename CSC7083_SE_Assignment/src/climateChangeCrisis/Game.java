@@ -272,6 +272,14 @@ public class Game {
 		}
 	}
 	
+	/**
+	 * this method determines which field a player wants to develop
+	 * 
+	 * @param player, an object of type player
+	 * @param fields, an arraylist of objects of type Field
+	 * @throws IllegalArgumentException if the player is null, or if the arraylist
+	 *                                  is null or empty
+	 */
 	public void makeDevelopment(Player player, ArrayList<Field> fields) throws IllegalArgumentException {
 		// some validation first
 		if (fields == null) {
@@ -282,53 +290,65 @@ public class Game {
 			throw new IllegalArgumentException("The player was null, that is not valid.");
 		}
 		// first lets check if the player is in ownership of only one field
-		if(fields.size()==1) {
-			//the player owns only one field, lets store it in a var
-			Field oneField = fields.get(0);
-			 System.out.printf("Congratulations you are in ownership of %s%n", oneField.getFieldName());
-			 System.out.println("It contains the following areas:");
-			 //iterate through the areas within the one field that the player owns and list them for the player
-			 //using the index of the area object in the area arraylist plus one! as the number in the menu system
-			 for(Area area : oneField.getAreas()) {
-				 System.out.printf("%d. %s%n", oneField.getAreas().indexOf(area)+1, area.getAreaName());
-			 }
-			 int playerResponse = sc.nextInt();
-			//I have 2 switches in here guys because I dont know if there are going to be 2 or 3 areas in the list. Maybe somebody can think of a more elegant solution
-					System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
-					
-					if(oneField.getAreas().size() == 2) {
-						switch(playerResponse) {
-						case 1:
-							//dev one
-							break;
-						case 2:
-							//dev two
-						break;
-						default:
-							System.out.println("You are a clown");
-					}
-					}else if(oneField.getAreas().size() == 3) {
-						switch(playerResponse) {
-						case 1:
-							//dev one
-							break;
-						case 2:
-							//dev two
-						break;
-						case 3:
-							//dev three
-						default:
-							System.out.println("You are a clown");
+		if (fields.size() == 1) {
+			// the player owns only one field, lets store it in a var
+			selectWhichArea(fields.get(0));
+
+		} else {
+			System.out.println(
+					"You are the owner of more than one field. You must choose which one you wish to develop.");
+			// iterate through the fields within fields arraylist for the player
+			// so player can select a field to develop that they own
+			// using the index of the field object in the field arraylist plus one! as the
+			// number in the menu system
+			for (Field field : fields) {
+				System.out.printf("%d. %s%n", fields.indexOf(field) + 1, field.getFieldName());
+			}
+			// establish size of list for validation
+			int highNumb = fields.size();
+			// boolean to check if input is valid
+			boolean isValidInput = false;
+			int playerResponse = 0; // Declare playerResponse outside the loop
+			
+			do {
+				System.out.println("Please select which field you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
+				if (sc.hasNextInt()) {
+					playerResponse = sc.nextInt();
+					if (0 < playerResponse && playerResponse <= highNumb) {
+						isValidInput = true;
 					}
 				}
-		}else {
-			System.out.println("You are the owner of more than one field. You must choose which one you wish to develop.");
-			//iterate through the fields within fields arraylist for the player. so player can select a field to develop that they own
-			 //using the index of the area object in the area arraylist plus one! as the number in the menu system
-			 for(Field field : fields) {
-				 System.out.printf("%d. %s%n", fields.indexOf(field), field.getFieldName());
-			 }
+			} while (!isValidInput);
+			selectWhichArea(fields.get(playerResponse - 1));
 		}
+	}
+
+	/**
+	 * this method allows the player to select which area to develop within a field
+	 * 
+	 * @param field, an object of type field
+	 * @throws IllegalArgumentException if the field object is null
+	 */
+	public void selectWhichArea(Field field) throws IllegalArgumentException {
+		//some validation first
+		if(field == null) {
+			throw new IllegalArgumentException("Field cannot be null");
+		}
+		
+		 System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
+		 System.out.println("It contains the following areas:");
+		 //iterate through the areas within the one field that the player owns and list them for the player
+		 //using the index of the area object in the area arraylist plus one! as the number in the menu system
+		 for(Area area : field.getAreas()) {
+			 System.out.printf("%d. %s%n", field.getAreas().indexOf(area)+1, area.getAreaName());
+		 }
+		 int playerResponse = sc.nextInt();
+		
+				System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
+				//area px selected, store it in a var, dont forget to subtract one and call changeDevLevel method
+				Area areaSelected = field.getAreas().get(playerResponse-1);
+				
+				changeDevLevel(areaSelected);
 	}
 
 	/**
