@@ -212,6 +212,38 @@ public class Game {
 		// Else getPlayerOrder again and repeat until playerOrder is exhausted or area
 		// is bought
 	}
+	
+	
+	public void offerDevOpportunyIfAvailable (Player player, ArrayList<Field> fields) {
+		ArrayList<Field> results = new ArrayList<>(); // make an empty list to handle any matches, i.e. any fields owned by player
+		//iterate through fields arraylist to check if any fields are owned by the player
+		//if so add to results
+		for(Field aField : fields) {
+			if(aField.getownedBy()==(player)) {
+				results.add(aField);
+			}
+			
+		if(results.isEmpty()) {
+			//the player is not in ownership of any field and hence cannot develop
+			//don't necessarily need to display this message, TEAM TO DISCUSS
+			System.out.println("You are not in ownership of any field and hence you cannot make a development.");
+		}else {
+			//the player is in ownership of one or more fields and has a development decision to make
+			//first lets check if the player is in ownership of only one field
+			if(results.size()==1) {
+				System.out.printf("Congratulations you are in ownership of %s", results.get(0).getFieldName());
+				System.out.println("Would you like to make a development?");
+				
+			}else {
+				System.out.println("You are in ownership of more than one field.");
+			
+			}
+			
+		}
+			
+		
+		}
+	}
 
 	/**
 	 * Handles a player's input when entered during their turn (at the start)
