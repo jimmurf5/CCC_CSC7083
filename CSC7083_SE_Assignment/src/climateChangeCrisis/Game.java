@@ -237,8 +237,9 @@ public class Game {
 		} else if (player == null) {
 			throw new IllegalArgumentException("The player was null, that is not valid.");
 		}
-		ArrayList<Field> results = new ArrayList<>(); // make an empty list to handle any matches, i.e. any fields owned
-														// by player
+		// make an empty list to handle any matches, i.e. any fields owned
+		// by player
+		ArrayList<Field> results = new ArrayList<>(); 
 		// iterate through fields arraylist to check if any fields are owned by the
 		// player
 		// if so add to results
@@ -296,7 +297,7 @@ public class Game {
 				System.out.println("You cannot afford to develop at this time.");
 			} else {
 				// the player owns only one field, lets store it in a var
-				selectWhichArea(fields.get(0));
+				selectWhichArea(fields.get(0), player);
 			}
 
 		} else {
@@ -307,8 +308,8 @@ public class Game {
 			// using the index of the field object in the field arraylist plus one! as the
 			// number in the menu system
 			for (Field field : fields) {
-				System.out.printf("%d. %s%n, areas in this field cost %f to develop", fields.indexOf(field) + 1,
-						field.getFieldName(), field.getareaBuyCost());
+				System.out.printf("%d. %s%n", fields.indexOf(field) + 1,
+						field.getFieldName());
 			}
 			// establish size of list for validation
 			int highNumb = fields.size();
@@ -341,7 +342,7 @@ public class Game {
 				System.out.println("You cannot afford to develop at this time.");
 			} else {
 				// the player owns only one field, lets store it in a var
-				selectWhichArea(fieldSelected);
+				selectWhichArea(fieldSelected, player);
 			}
 		}
 
@@ -353,7 +354,7 @@ public class Game {
 	 * @param field, an object of type field
 	 * @throws IllegalArgumentException if the field object is null
 	 */
-	public void selectWhichArea(Field field) throws IllegalArgumentException {
+	public void selectWhichArea(Field field, Player player) throws IllegalArgumentException {
 		// some validation first
 		if (field == null) {
 			throw new IllegalArgumentException("Field cannot be null");
@@ -393,9 +394,24 @@ public class Game {
 		// area px selected, store it in a var, dont forget to subtract one and call
 		// changeDevLevel method
 		Area areaSelected = field.getAreas().get(playerResponse - 1);
-		changeDevLevel(field.getAreas().get(playerResponse - 1));
+		// caste area to fieldArea in order to access its methods
+		FieldArea fieldAreaSelected = ((FieldArea)areaSelected);
+		//calculate the cost of development
+		float costToDev = (float) (fieldAreaSelected.getdevelopmentObj().getCostMultiplier() * field.getareaBuyCost());
+		// lets make sure the player can afford to develop an area in that field
+					if ((costToDev > player.getResources())) {
+						System.out.println("You cannot afford to develop at this time.");
+					} else {
+						changeDevLevel(areaSelected);
+					}
+		
 	}
 	
+	private void changeDevLevel(Area area) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	// Method to check if a player owns the entire field
 	/**
      * Checks if a player owns the entire field.
