@@ -342,24 +342,31 @@ public class Game {
 				System.out.println("You cannot afford to develop at this time.");
 			} else {
 				// the player owns only one field, lets store it in a var
-				selectWhichArea(fieldSelected, player);
+				selectWhichArea(fieldSelected, player, null);
 			}
 		}
 
 	}
 
 	/**
-	 * this method allows the player to select which area to develop within a field
 	 * 
 	 * @param field, an object of type field
-	 * @throws IllegalArgumentException if the field object is null
+	 * @param player, an object of type player
+	 * @param developmentsArrayL, an arraylist of development objects
+	 * @throws IllegalArgumentException if the arraylist is empty or null, or if the
+	 * either field or player is null
 	 */
-	public void selectWhichArea(Field field, Player player) throws IllegalArgumentException {
+	public void selectWhichArea(Field field, Player player, ArrayList<Development> developmentsArrayL)
+			throws IllegalArgumentException {
 		// some validation first
-		if (field == null) {
-			throw new IllegalArgumentException("Field cannot be null");
+		if (field == null || player == null) {
+			throw new IllegalArgumentException("Neither field not player can be null");
 		}
-
+		if (developmentsArrayL == null) {
+			throw new IllegalArgumentException("The list was null, that is invalid.");
+		} else if (developmentsArrayL.isEmpty()) {
+			throw new IllegalArgumentException("The list was empty, that is not valid.");
+		}
 		System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
 		System.out.println("It contains the following areas:");
 		// iterate through the areas within the one field that the player owns and list
@@ -377,13 +384,15 @@ public class Game {
 		int playerResponse = 0; // Declare playerResponse outside the loop
 
 		do {
-			System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other responses are invalid.");
+			System.out.println(
+					"Please select which area you would like to develop by choosing a number from the menu above, all other responses are invalid.");
 			if (sc.hasNextInt()) {
 				playerResponse = sc.nextInt();
 				if (0 < playerResponse && playerResponse <= highNumb) {
 					isValidInput = true;
 				} else {
-					System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.", highNumb);
+					System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.",
+							highNumb);
 				}
 			} else {
 				// Consume the non-integer token to clear the input buffer
@@ -395,22 +404,43 @@ public class Game {
 		// changeDevLevel method
 		Area areaSelected = field.getAreas().get(playerResponse - 1);
 		// caste area to fieldArea in order to access its methods
-		FieldArea fieldAreaSelected = ((FieldArea)areaSelected);
-		//calculate the cost of development
+		FieldArea fieldAreaSelected = ((FieldArea) areaSelected);
+		// calculate the cost of development
 		float costToDev = (float) (fieldAreaSelected.getdevelopmentObj().getCostMultiplier() * field.getareaBuyCost());
 		// lets make sure the player can afford to develop an area in that field
-					if ((costToDev > player.getResources())) {
-						System.out.println("You cannot afford to develop at this time.");
-					} else {
-						changeDevLevel(areaSelected);
-					}
-		
+		if ((costToDev > player.getResources())) {
+			System.out.println("You cannot afford to develop at this time.");
+		} else {
+			changeDevLevel(fieldAreaSelected, developmentsArrayL);
+			;
+		}
 	}
 	
-	private void changeDevLevel(Area area) {
-		// TODO Auto-generated method stub
+	
+	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL) {
+		// some validation first
+		if (developmentsArrayL == null) {
+			throw new IllegalArgumentException("The list was null, that is invalid.");
+		} else if (developmentsArrayL.isEmpty()) {
+			throw new IllegalArgumentException("The list was empty, that is not valid.");
+		} else if (area == null) {
+			throw new IllegalArgumentException("The area was null, that is not valid.");
+		}else if(!(area instanceof FieldArea)) {
+			throw new IllegalArgumentException("The area object is not of type fieldArea, you cannot develop.");
+		}
+		// caste area to fieldArea in order to access its methods
+		FieldArea fieldArea = ((FieldArea) area);
+		// get the field areas development level
+		int fieldAreaDevLevel = fieldArea.getdevelopmentObj().getLevel();
+		// increase the player development level by one
+		fieldArea.setdevelopmentObj(developmentsArrayL.get(fieldAreaDevLevel + 1));
+
+		// now the development level is updated lets amend the player balance
+		updatePlayerBalance(player, resources);
+	} 
+
+
 		
-	}
 
 	// Method to check if a player owns the entire field
 	/**
