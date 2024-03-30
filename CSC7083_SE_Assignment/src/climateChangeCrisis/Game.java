@@ -350,33 +350,130 @@ public class Game {
 				
 				changeDevLevel(areaSelected);
 	}
+	
+	// Method to check if a player owns the entire field
+	/**
+     * Checks if a player owns the entire field.
+     * 
+     * @param player the player to check ownership for
+     * @return true if the player owns all areas within any field, false otherwise
+     */
+	/**
+	 * Checks if a player owns the entire field.
+	 * 
+	 * @param player the player to check ownership for
+	 * @return true if the player owns all areas within any field, false otherwise
+	 */
+	public boolean playerOwnsEntireField(Player player) {
+	    for (Field field : fields) {
+	        boolean ownsField = field.getownedBy() == player; // Check if the field is owned by the player
+	        if (ownsField) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+
+
+
+
+    
+ // Method to update player's current square
+    //This method calculates the new position of the player after rolling the dice and updates their current square accordingly.
+    //It also checks if the player has passed or landed on the "GO Square" and triggers the passGo method if necessary.
+	/**
+     * Updates the player's current square after rolling the dice.
+     * 
+     * @param player    the player whose square is being updated
+     * @param diceRoll  the total number rolled on the dice
+     */
+    public void updatePlayerCurrentSquare(Player player, int diceRoll) {
+        int currentPlayerIndex = squareOrder.indexOf(player.getCurrentArea());
+        int newIndex = (currentPlayerIndex + diceRoll) % squareOrder.size();
+        if (newIndex < 0) {
+            newIndex += squareOrder.size();
+        }
+        player.setCurrentArea(squareOrder.get(newIndex));
+
+        if (diceRoll > 12) {
+            player.passGo();
+            System.out.println(player.getPlayerName() + " passed GO SQUARE and received additional funds!");
+        } else if (squareOrder.get(newIndex) instanceof SpecialArea
+                && ((SpecialArea) squareOrder.get(newIndex)).getAreaName().equalsIgnoreCase("GO Square")) {
+            player.landOnGo();
+            System.out.println(player.getPlayerName() + " landed on GO SQUARE and received additional funds!");
+        }
+    }
+
+
+    
+    // Method to handle quitting the game
+    public void handleGameQuit(Player player) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Are you sure you want to quit the game? (Y/N): ");
+        String confirmation = scanner.nextLine().trim().toUpperCase();
+
+        if (confirmation.equals("Y")) {
+            players.remove(player);
+            System.out.println(player.getPlayerName() + " has quit the game.");
+
+            if (players.isEmpty()) {
+                System.out.println("No more players left in the game. Exiting...");
+                System.exit(0); // Exit the program if no players are left
+            }
+        } else {
+            System.out.println("Returning to the game.");
+        }
+        scanner.close();
+    }
+    
+
+	// Method to start the game
+    public void startGame() {
+        // Loop through players and handle their turns until the game ends
+        for (Player player : players) {
+            handleTurn(player);
+            if (isGameOver()) {
+                break;
+            }
+        }
+    }
+
+
+
+	private boolean isGameOver() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	/**
 	 * Handles a player's input when entered during their turn (at the start)
 	 * 
 	 * @param input
 	 */
-	public void handleUserInput(String input) {
-
-		switch (input) {
-		case "1":
-			System.out.println("Rolling dice...");
-			// setCurrentArea(rollDice(), squareOrder)
-			break;
-		case "2":
-			System.out.println("Buying development...");
-			// makeDevelopment();
-			break;
-		case "3":
-			System.out.println("Quitting game...");
-			// endGame();
-			break;
-		default:
-			System.out.println("Please enter a valid option");
-			break;
-		}
-	}
-
+ // Method to handle user input during turn
+    public void handleUserInput(Player player, String input) {
+        switch (input) {
+            case "1":
+                System.out.println("Rolling dice...");
+                int diceRoll = rollDice();
+                updatePlayerCurrentSquare(player, diceRoll);
+                break;
+            case "2":
+                System.out.println("Buying development...");
+                
+                // Additional logic for buying development
+                break;
+            case "3":
+                System.out.println("Quitting game...");
+                handleGameQuit(player);
+                
+                break;
+            default:
+                System.out.println("Please enter a valid option");
+                break;
+        }
+    }
 	/**
 	 * Displays the options a player has available to them (at the start of turn)
 	 * 
