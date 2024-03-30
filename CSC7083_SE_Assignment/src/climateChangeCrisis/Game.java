@@ -291,8 +291,13 @@ public class Game {
 		}
 		// first lets check if the player is in ownership of only one field
 		if (fields.size() == 1) {
-			// the player owns only one field, lets store it in a var
-			selectWhichArea(fields.get(0));
+			// lets make sure the player can afford to develop an area in that field
+			if (fields.get(0).getareaBuyCost() > player.getResources()) {
+				System.out.println("You cannot afford to develop at this time.");
+			} else {
+				// the player owns only one field, lets store it in a var
+				selectWhichArea(fields.get(0));
+			}
 
 		} else {
 			System.out.println(
@@ -302,25 +307,44 @@ public class Game {
 			// using the index of the field object in the field arraylist plus one! as the
 			// number in the menu system
 			for (Field field : fields) {
-				System.out.printf("%d. %s%n", fields.indexOf(field) + 1, field.getFieldName());
+				System.out.printf("%d. %s%n, areas in this field cost %f to develop", fields.indexOf(field) + 1,
+						field.getFieldName(), field.getareaBuyCost());
 			}
 			// establish size of list for validation
 			int highNumb = fields.size();
 			// boolean to check if input is valid
 			boolean isValidInput = false;
 			int playerResponse = 0; // Declare playerResponse outside the loop
-			
+
 			do {
-				System.out.println("Please select which field you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
+				System.out.println(
+						"Please select which field you would like to develop by choosing a number from the menu above, all other responses are invalid.");
 				if (sc.hasNextInt()) {
 					playerResponse = sc.nextInt();
 					if (0 < playerResponse && playerResponse <= highNumb) {
 						isValidInput = true;
+					} else {
+						System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.",
+								highNumb);
 					}
+				} else {
+					// Consume the non-integer token to clear the input buffer
+					sc.next();
+					System.out.println("Invalid input. Please enter a number.");
 				}
 			} while (!isValidInput);
-			selectWhichArea(fields.get(playerResponse - 1));
+			// field px selected, store it in a var, dont forget to subtract one
+			Field fieldSelected = fields.get(playerResponse - 1);
+
+			// lets make sure the player can afford to develop an area in that field
+			if (fieldSelected.getareaBuyCost() > player.getResources()) {
+				System.out.println("You cannot afford to develop at this time.");
+			} else {
+				// the player owns only one field, lets store it in a var
+				selectWhichArea(fieldSelected);
+			}
 		}
+
 	}
 
 	/**
@@ -330,25 +354,46 @@ public class Game {
 	 * @throws IllegalArgumentException if the field object is null
 	 */
 	public void selectWhichArea(Field field) throws IllegalArgumentException {
-		//some validation first
-		if(field == null) {
+		// some validation first
+		if (field == null) {
 			throw new IllegalArgumentException("Field cannot be null");
 		}
-		
-		 System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
-		 System.out.println("It contains the following areas:");
-		 //iterate through the areas within the one field that the player owns and list them for the player
-		 //using the index of the area object in the area arraylist plus one! as the number in the menu system
-		 for(Area area : field.getAreas()) {
-			 System.out.printf("%d. %s%n", field.getAreas().indexOf(area)+1, area.getAreaName());
-		 }
-		 int playerResponse = sc.nextInt();
-		
-				System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other repsonses are invalid.");
-				//area px selected, store it in a var, dont forget to subtract one and call changeDevLevel method
-				Area areaSelected = field.getAreas().get(playerResponse-1);
-				
-				changeDevLevel(areaSelected);
+
+		System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
+		System.out.println("It contains the following areas:");
+		// iterate through the areas within the one field that the player owns and list
+		// them for the player
+		// using the index of the area object in the area arraylist plus one! as the
+		// number in the menu system
+
+		for (Area area : field.getAreas()) {
+			System.out.printf("%d. %s%n", field.getAreas().indexOf(area) + 1, area.getAreaName());
+		}
+		// establish size of list for validation
+		int highNumb = field.getAreas().size();
+		// boolean to check if input is valid
+		boolean isValidInput = false;
+		int playerResponse = 0; // Declare playerResponse outside the loop
+
+		do {
+			System.out.println("Please select which area you would like to develop by choosing a number from the menu above, all other responses are invalid.");
+			if (sc.hasNextInt()) {
+				playerResponse = sc.nextInt();
+				if (0 < playerResponse && playerResponse <= highNumb) {
+					isValidInput = true;
+				} else {
+					System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.", highNumb);
+				}
+			} else {
+				// Consume the non-integer token to clear the input buffer
+				sc.next();
+				System.out.println("Invalid input. Please enter a number.");
+			}
+		} while (!isValidInput);
+		// area px selected, store it in a var, dont forget to subtract one and call
+		// changeDevLevel method
+		Area areaSelected = field.getAreas().get(playerResponse - 1);
+		changeDevLevel(field.getAreas().get(playerResponse - 1));
 	}
 	
 	// Method to check if a player owns the entire field
@@ -460,11 +505,6 @@ public class Game {
                 updatePlayerCurrentSquare(player, diceRoll);
                 break;
             case "2":
-                System.out.println("Buying development...");
-                
-                // Additional logic for buying development
-                break;
-            case "3":
                 System.out.println("Quitting game...");
                 handleGameQuit(player);
                 
