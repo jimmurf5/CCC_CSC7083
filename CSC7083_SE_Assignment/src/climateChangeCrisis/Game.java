@@ -342,7 +342,7 @@ public class Game {
 				System.out.println("You cannot afford to develop at this time.");
 			} else {
 				// the player owns only one field, lets store it in a var
-				selectWhichArea(fieldSelected, player, null);
+				selectWhichArea(fieldSelected, player);
 			}
 		}
 
@@ -350,22 +350,14 @@ public class Game {
 
 	/**
 	 * 
-	 * @param field, an object of type field
+	 * @param field,  an object of type field
 	 * @param player, an object of type player
-	 * @param developmentsArrayL, an arraylist of development objects
-	 * @throws IllegalArgumentException if the arraylist is empty or null, or if the
-	 * either field or player is null
+	 * @throws IllegalArgumentException if the either field or player is null
 	 */
-	public void selectWhichArea(Field field, Player player, ArrayList<Development> developmentsArrayL)
-			throws IllegalArgumentException {
+	public void selectWhichArea(Field field, Player player) throws IllegalArgumentException {
 		// some validation first
 		if (field == null || player == null) {
 			throw new IllegalArgumentException("Neither field not player can be null");
-		}
-		if (developmentsArrayL == null) {
-			throw new IllegalArgumentException("The list was null, that is invalid.");
-		} else if (developmentsArrayL.isEmpty()) {
-			throw new IllegalArgumentException("The list was empty, that is not valid.");
 		}
 		System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
 		System.out.println("It contains the following areas:");
@@ -403,21 +395,36 @@ public class Game {
 		// area px selected, store it in a var, dont forget to subtract one and call
 		// changeDevLevel method
 		Area areaSelected = field.getAreas().get(playerResponse - 1);
-		// caste area to fieldArea in order to access its methods
-		FieldArea fieldAreaSelected = ((FieldArea) areaSelected);
-		// calculate the cost of development
-		float costToDev = (float) (fieldAreaSelected.getdevelopmentObj().getCostMultiplier() * field.getareaBuyCost());
-		// lets make sure the player can afford to develop an area in that field
-		if ((costToDev > player.getResources())) {
-			System.out.println("You cannot afford to develop at this time.");
+
+		// Check if the areaSelected is an instance of FieldArea before casting
+		if (areaSelected instanceof FieldArea) {
+			// caste area to fieldArea in order to access its methods
+			FieldArea fieldAreaSelected = ((FieldArea) areaSelected);
+			// calculate the cost of development
+			float costToDev = (float) (fieldAreaSelected.getdevelopmentObj().getCostMultiplier() * field.getareaBuyCost());
+			// lets make sure the player can afford to develop an area in that field
+			if ((costToDev > player.getResources())) {
+				System.out.println("You cannot afford to develop at this time.");
+			} else {
+				changeDevLevel(fieldAreaSelected, null);//this needs to be changed, probably better to have list as an instance avr of the game class
+			}
 		} else {
-			changeDevLevel(fieldAreaSelected, developmentsArrayL);
-			;
+			// Handle the case where the areaSelected is not a FieldArea
+			throw new IllegalArgumentException("Selected area is not a FieldArea.");
 		}
 	}
 	
+	//note to discuss, I don't have access to developmentArryaL in order to use it to change the dev level. Should we declare it as an instance var in the game class?
+	//that might be the easiest thing to do, thats if I am going about changing the dev level in the correct way
+	//I have passed it as a parameter here but its not really working good
 	
-	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL) {
+	/**
+	 * 
+	 * @param area, an object of type area
+	 * @param developmentsArrayL, an arraylist of development objects
+	 * @throws IllegalArgumentException if the list is not valid or the objects are null
+	 */
+	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL) throws IllegalArgumentException{
 		// some validation first
 		if (developmentsArrayL == null) {
 			throw new IllegalArgumentException("The list was null, that is invalid.");
