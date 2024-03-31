@@ -543,6 +543,53 @@ public class Game {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	/**
+	 * This method allow the player to take their turn
+	 * By displaying the options menu
+	 * Then taking the players input and either quitting the game or rolling the dice 
+	 * and updating player position
+	 * @param player, an object of type player
+	 * @throws IllegalArgumentException if the player is null
+	 */
+	public void takeTurnMenu(Player player)throws IllegalArgumentException {
+		if(player == null) {
+			throw new IllegalArgumentException("Player is null, that is invalid.");
+		}
+	    // Display options
+	    System.out.printf("It's %s's turn!%n", player.getPlayerName());
+	    System.out.println("Choose an option:");
+	    System.out.println(" 1. Roll dice");
+	    System.out.println(" 2. Quit Game");
+
+	    // Take user input
+	    String input;
+	    do {
+	        System.out.print("Enter your choice (1 or 2): ");
+	        input = sc.nextLine(); 
+	        if (!input.equals("1") && !input.equals("2")) {
+	            System.out.println("Invalid input. Please enter 1 or 2.");
+	        }
+	    } while (!input.equals("1") && !input.equals("2"));
+
+	    // Process user input
+	    switch (input) {
+	        case "1":
+	            System.out.println("Rolling dice...");
+	            int diceRoll = rollDice();
+	            updatePlayerCurrentSquare(player, diceRoll);
+	            break;
+	        case "2":
+	            System.out.println("Quitting game...");
+	            handleGameQuit(player);
+	            break;
+	        default:
+	            System.out.println("Please enter a valid option");
+	            break;
+	    }
+	}
+
+
 
 	/**
 	 * Handles a player's input when entered during their turn (at the start)
