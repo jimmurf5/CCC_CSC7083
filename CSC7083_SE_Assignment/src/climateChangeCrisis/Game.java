@@ -406,7 +406,7 @@ public class Game {
 			if ((costToDev > player.getResources())) {
 				System.out.println("You cannot afford to develop at this time.");
 			} else {
-				changeDevLevel(fieldAreaSelected, null);//this needs to be changed, probably better to have list as an instance avr of the game class
+				changeDevLevel(fieldAreaSelected, null, costToDev);//this needs to be changed, probably better to have list as an instance avr of the game class
 			}
 		} else {
 			// Handle the case where the areaSelected is not a FieldArea
@@ -420,11 +420,13 @@ public class Game {
 	
 	/**
 	 * 
+	 * 
 	 * @param area, an object of type area
 	 * @param developmentsArrayL, an arraylist of development objects
-	 * @throws IllegalArgumentException if the list is not valid or the objects are null
+	 * @param costToDev, the cost to develop an area
+	 * @throws IllegalArgumentException if the the list is invalid, the object is null or the costToDev is not a positive number
 	 */
-	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL) throws IllegalArgumentException{
+	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL, float costToDev) throws IllegalArgumentException{
 		// some validation first
 		if (developmentsArrayL == null) {
 			throw new IllegalArgumentException("The list was null, that is invalid.");
@@ -434,6 +436,8 @@ public class Game {
 			throw new IllegalArgumentException("The area was null, that is not valid.");
 		}else if(!(area instanceof FieldArea)) {
 			throw new IllegalArgumentException("The area object is not of type fieldArea, you cannot develop.");
+		}else if(costToDev <= 0) {
+			throw new IllegalArgumentException("The cost to develop must be a positive number.");
 		}
 		// caste area to fieldArea in order to access its methods
 		FieldArea fieldArea = ((FieldArea) area);
@@ -441,9 +445,10 @@ public class Game {
 		int fieldAreaDevLevel = fieldArea.getdevelopmentObj().getLevel();
 		// increase the player development level by one
 		fieldArea.setdevelopmentObj(developmentsArrayL.get(fieldAreaDevLevel + 1));
+		Player player = fieldArea.getOwnedBy();
 
 		// now the development level is updated lets amend the player balance
-		updatePlayerBalance(player, resources);
+		updatePlayerBalance(player, costToDev);
 	} 
 
 
@@ -543,6 +548,53 @@ public class Game {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	/**
+	 * This method allow the player to take their turn
+	 * By displaying the options menu
+	 * Then taking the players input and either quitting the game or rolling the dice 
+	 * and updating player position
+	 * @param player, an object of type player
+	 * @throws IllegalArgumentException if the player is null
+	 */
+	public void takeTurnMenu(Player player)throws IllegalArgumentException {
+		if(player == null) {
+			throw new IllegalArgumentException("Player is null, that is invalid.");
+		}
+	    // Display options
+	    System.out.printf("It's %s's turn!%n", player.getPlayerName());
+	    System.out.println("Choose an option:");
+	    System.out.println(" 1. Roll dice");
+	    System.out.println(" 2. Quit Game");
+
+	    // Take user input
+	    String input;
+	    do {
+	        System.out.print("Enter your choice (1 or 2): ");
+	        input = sc.nextLine(); 
+	        if (!input.equals("1") && !input.equals("2")) {
+	            System.out.println("Invalid input. Please enter 1 or 2.");
+	        }
+	    } while (!input.equals("1") && !input.equals("2"));
+
+	    // Process user input
+	    switch (input) {
+	        case "1":
+	            System.out.println("Rolling dice...");
+	            int diceRoll = rollDice();
+	            updatePlayerCurrentSquare(player, diceRoll);
+	            break;
+	        case "2":
+	            System.out.println("Quitting game...");
+	            handleGameQuit(player);
+	            break;
+	        default:
+	            System.out.println("Please enter a valid option");
+	            break;
+	    }
+	}
+
+
 
 	/**
 	 * Handles a player's input when entered during their turn (at the start)
