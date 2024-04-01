@@ -452,8 +452,119 @@ public class Game {
 	} 
 
 
-		
+	/**
+	 * Updates the player's balance after making a development and transfers the payment to the owner's balance if applicable.
+	 * 
+	 * @param player    the player who made the development
+	 * @param owner     the owner of the area being developed
+	 * @param costToDev the cost of development
+	 */
+	public void updatePlayerBalance(Player player, float costToDev) {
+	    // Deduct cost from the player's resources
+	    float newBalance = player.getResources() - costToDev;
+	    player.setResources((int) newBalance);
 
+	}
+	
+	/**
+	 * Updates the owner's balance after receiving payment.
+	 * 
+	 * @param owner     the owner of the area being developed
+	 * @param costToDev the amount received
+	 */
+	public void updateOwnerBalance(Player owner, float costToDev) {
+	    // Add received amount to the owner's resources
+	    float newBalance = owner.getResources() + costToDev;
+	    owner.setResources((int) newBalance);
+	}
+	
+	public void handleAreaConsequences(Player player, Area area, ArrayList<Field> fields, ArrayList<Development> developments, float costToDev) {
+	    if (!(area instanceof FieldArea)) {
+	        // Handle the case where the area is not a FieldArea
+	        return;
+	    }
+	    
+	    FieldArea fieldArea = (FieldArea) area;
+	    Development dev = fieldArea.getdevelopmentObj();
+	    System.out.printf("%s, You have landed on %s! (%s)%n", player.getPlayerName(), area.getAreaName(), dev.getDescription());
+
+	 // Check if the area is owned by the player
+	    Player owner = fieldArea.getOwnedBy();
+	    float costMultiplier = 1.00f; // Default cost multiplier
+
+	    // Get the development level, description, and cost multiplier from the developments ArrayList
+	    for (Development development : developments) {
+	        if (development.getLevel() == dev.getLevel()) {
+	            costMultiplier = (float) development.getCostMultiplier();
+	            break;
+	        }
+	    }
+
+
+	    switch (dev.getLevel()) {
+	        case 1:
+	            System.out.println("Unowned Square - Square is currently available!");
+	            fieldArea.setOwnedBy(player, dev); // Assign the area to the player
+	            updatePlayerBalance(player, costToDev); // Update player's balance
+	            System.out.printf("Action taken! Your eco token balance was %d eco tokens.%n", player.getResources());
+	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources() - (int)costToDev);
+	            System.out.printf("%s is now in charge of %s.%n", player.getPlayerName(), area.getAreaName());
+	            break;
+	        case 2:
+	            System.out.println("Development: Level 2 – “Owned Square” – “Square already owned by player”");
+	            if (owner != null && !owner.equals(player)) {
+	                System.out.printf("Unfortunately for you, %s is in charge of this area.%n", owner.getPlayerName());
+	                System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
+	                System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
+	                updatePlayerBalance(player, costToDev); // Update player's balance
+	                System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
+	                // Update owner's balance
+	                updateOwnerBalance(owner, costToDev); // Update owner's balance
+	                System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
+	            }
+	            break;
+	        case 3:
+	            System.out.printf("Please help %s create a Sustainability Educational Programme that aims to educate individuals of all ages.%n", owner.getPlayerName());
+	            System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
+	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
+	            updatePlayerBalance(player, costToDev); // Update player's balance
+	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
+	            // Update owner's balance
+	            updateOwnerBalance(owner, costToDev); // Update owner's balance
+	            System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
+	            break;
+	        case 4:
+	            System.out.printf("Please help %s build an Eco Learning Centre which will promote environmental knowledge and skills.%n", owner.getPlayerName());
+	            System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
+	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
+	            updatePlayerBalance(player, costToDev); // Update player's balance
+	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
+	            // Update owner's balance
+	            updateOwnerBalance(owner, costToDev); // Update owner's balance
+	            System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
+	            break;
+	        case 5:
+	            System.out.printf("Please help %s establish a Green Community Initiative to help empower communities and inspire positive change.%n", owner.getPlayerName());
+	            System.out.printf("Please pay %.2f eco tokens.%n", costToDev);
+	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
+	            updatePlayerBalance(player, costToDev); // Update player's balance
+	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
+	            break;
+	        case 6:
+	            System.out.printf("Please help %s form a Global Climate Accord to address urgent challenges posed by climate change.%n", owner.getPlayerName());
+	            System.out.printf("Please pay %.2f eco tokens.%n", costToDev);
+	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
+	            updatePlayerBalance(player, costToDev); // Update player's balance
+	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
+	            break;
+	        default:
+	            System.out.println("Unrecognised development level");
+	            break;
+	    }
+	}
+
+
+	
 	// Method to check if a player owns the entire field
 	/**
      * Checks if a player owns the entire field.
@@ -499,11 +610,9 @@ public class Game {
         player.setCurrentArea(squareOrder.get(newIndex));
 
         if (diceRoll > 12) {
-            player.passGo();
             System.out.println(player.getPlayerName() + " passed GO SQUARE and received additional funds!");
         } else if (squareOrder.get(newIndex) instanceof SpecialArea
-                && ((SpecialArea) squareOrder.get(newIndex)).getAreaName().equalsIgnoreCase("GO Square")) {
-            player.landOnGo();
+                && ((SpecialArea) squareOrder.get(newIndex)).getAreaName().equalsIgnoreCase("goSquare")) {
             System.out.println(player.getPlayerName() + " landed on GO SQUARE and received additional funds!");
         }
     }
