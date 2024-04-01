@@ -199,13 +199,107 @@ public class Game {
 	}
 
 	/**
-	 * Handles a player's actions after landing on an area
-	 * 
-	 * @param player
-	 * @param area
+	 * Handles  a players actions after lands on an area
+	 * @param player, object of type player
+	 * @param area, object of type
+	 * @throws IllegalArgumentException if player or area are null
 	 */
-	public void handleActions(Player player, Area area) {
-		// Player shown info on area landed on
+	public void handleActions(Player player, Area area)throws IllegalArgumentException{
+		//some validation
+		if(area == null || player == null) {
+			throw new IllegalArgumentException("Neither player or area can be null.");
+		}
+		//check if area is a field area
+		System.out.printf("You have landed on %s%n", area.getAreaName());
+		
+		//a switch to determine what the players landing obligation is if any
+		//and also set the cost to buy if there is one for the square
+		int costToBuy = 0;
+		int index = squareOrder.indexOf(area);
+		switch (index) {
+		case 0:
+			//call a method about blank start square
+			//or just display message and exit method?
+			return;
+		case 1:
+		case 2:
+		case 3:
+			costToBuy = fields.get(index).getareaBuyCost();
+			break;
+		case 4:
+		case 5:
+		case 6:
+			costToBuy = fields.get(index).getareaBuyCost();
+			break;
+		case 7:
+			System.out.println("Sit this one out.");
+			return;
+		case 8:
+		case 9:
+			costToBuy = fields.get(index).getareaBuyCost();
+			break;
+		case 10:
+		case 11:
+			costToBuy = fields.get(index).getareaBuyCost();
+			break;
+		default:
+			break;
+		}
+		//caste area to field area to access methods of field area
+		FieldArea fieldArea = null;
+		if(area instanceof FieldArea) {
+			fieldArea = ((FieldArea)area);
+		}else {
+			// Handle the case where the areaSelected is not a FieldArea
+			
+			throw new IllegalArgumentException("Selected area is not a FieldArea.");
+		}
+		
+		if(!(fieldArea.getOwnedBy() == null && !(fieldArea.getOwnedBy() == player))) {
+			//then the fieldArea is in ownership and the player must pay
+			//call obligation info method
+		}else if (fieldArea.getOwnedBy() == player) {
+			System.out.println("This is your square, you incurr no cost by landing on it.");
+		}else {
+			// the fieldArea is not in ownership and the player has a purchase decision
+			System.out.printf("The square %s is not under ownership.%n", fieldArea.getAreaName());
+			
+			//make sure the player can afford it
+			if(player.getResources()<costToBuy) {
+				System.out.println("You have insufficient resources at this time and cannot purchase this square.");
+				System.out.println("The square will be offered to the other players.");
+			}
+
+			System.out.printf("Would you like to purchase it? The cost is %d. Type Y/ N.%n", costToBuy);
+			System.out.println("Y for yes, N will offer the opportuny to purchase to the other player/ s.");
+			
+			String playerResponse;
+
+			do {
+				System.out.print("Enter your choice, only Y and N are valid inputs: ");
+				playerResponse = sc.nextLine().trim().toLowerCase();
+
+				switch (playerResponse) {
+				case "y":
+					// Player wants to buy
+					//change the squares dev level, change the squares ownership
+					fieldArea.setOwnedBy(player, null);//needs to fix this, cant access array
+					updatePlayerBalance(player, costToBuy);//update player balance
+					break;
+				case "n":
+					// Player doesn't want to buy
+					// Offer to other players
+					// Implement the logic here
+					break;
+				default:
+					System.out.println("Invalid input. Please enter 'Y' or 'N'.");
+					break;
+				}
+			} while (!playerResponse.equals("y") && !playerResponse.equals("n"));
+		}
+		}
+		
+			
 
 		// If area.ownedByPlayer = true, show obligation info (Player resource exchange)
 		// Else prompt player for decision to buy or offer unwanted square
@@ -218,7 +312,6 @@ public class Game {
 		// (Player resource change)
 		// Else getPlayerOrder again and repeat until playerOrder is exhausted or area
 		// is bought
-	}
 
 	/**
 	 * this method gives a player the opportunity to decide weather or not to make a development decision
