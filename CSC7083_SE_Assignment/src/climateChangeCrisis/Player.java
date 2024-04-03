@@ -89,11 +89,7 @@ public class Player {
 	 * @param resources the resources to set
 	 */
 	public void setResources(int resources){
-		
-		if (resources < 0) {
-			//player goes bankrupt if resources fall below zero 
-			//trigger an endGame() method that calculates the standings and informs the user
-		} 
+
 		
 		this.resources = resources; 
 	}
