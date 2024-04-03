@@ -42,10 +42,6 @@ public class FieldArea extends Area {
 			throw new IllegalArgumentException("Development cannot be null");
 		}
 
-		if (developmentObj.getLevel() <= this.developmentObj.getLevel()) {
-			throw new IllegalArgumentException("Development level needs to increase");
-		}
-
 		this.developmentObj = developmentObj;
 	}
 

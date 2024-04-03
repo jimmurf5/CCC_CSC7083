@@ -726,6 +726,7 @@ public class Game {
 		int noPlayers;
 		
 		System.out.println("***** WELCOME TO CLIMATE CHANGE CRISIS *****");
+		System.out.println();
 		System.out.println("Please enter number of players:");
 		noPlayers = sc.nextInt();
 
@@ -745,14 +746,20 @@ public class Game {
 			}
 
 			playerName = sc.nextLine().trim();
+			Player newPlayer = new Player(playerName, goSquare);
+			players.add(newPlayer);
 			for (Player player : players) {
 				if (player.getPlayerName().equals(playerName)) {
 					System.out.println("Player name already exists, please choose a different name.");
 					sc.nextLine();
+					playerName = sc.nextLine().trim();
+					Player newPlayer1 = new Player(playerName, goSquare);
+					players.remove(newPlayer);
+					players.add(newPlayer1);
 					continue;
 				} else {
-					Player newPlayer = new Player(playerName, goSquare);
-					players.add(newPlayer);
+					Player nextPlayer = new Player(playerName, goSquare);
+					players.add(nextPlayer);
 					System.out.printf("%s has been successfully registered as a player!%n", newPlayer.getPlayerName());
 					sc.nextLine();
 				}

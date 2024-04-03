@@ -132,10 +132,6 @@ public class Field {
 			throw new IllegalArgumentException("Field is already owned by another Player");
 		}
 
-		if (ownedBy == null) {
-			throw new IllegalArgumentException("Cannot change Field ownership to null");
-		}
-
 		this.ownedBy = ownedBy;
 	}
 

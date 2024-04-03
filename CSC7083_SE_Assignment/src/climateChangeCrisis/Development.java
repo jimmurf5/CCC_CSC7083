@@ -14,7 +14,7 @@ public class Development {
 	
 	//declare constants for business rules 
 	private static final int MIN_NAME_LENGTH = 2;
-	private static final int MAX_NAME_LENGTH = 20;
+	private static final int MAX_NAME_LENGTH = 50;
 	
 	private static final int MIN_DEV_LEVEL = 1;
 	private static final int MAX_DEV_LEVEL = 6;
