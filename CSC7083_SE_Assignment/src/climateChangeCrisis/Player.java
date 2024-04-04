@@ -6,6 +6,8 @@ package climateChangeCrisis;
 *@author FERGUSON_ROBERT_40040521 
 */
 
+import java.util.Objects;
+
 /**
  * @author alex
  */
@@ -130,6 +132,25 @@ public class Player {
 	public void setQuitGame(boolean quitGame) {
 	    // If the game has a specific state or actions to perform when quitting, handle them here
 	    this.quitGame = quitGame;
+	}
+
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(playerName);
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		return Objects.equals(playerName, other.playerName);
 	}
 
 

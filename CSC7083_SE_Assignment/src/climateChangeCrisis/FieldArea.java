@@ -14,12 +14,12 @@ public class FieldArea extends Area {
 
 	// Constructor
 
-	public FieldArea(String areaName, Development developmentObj, String initialSquareMessage) {
+	public FieldArea(String areaName, Development developmentObj, String initialSquareMessage, Player player) {
 		super.setAreaName(areaName);
 		super.setBelongsToField(true);
 		this.setdevelopmentObj(developmentObj);
 		this.setInitialSquareMessage(initialSquareMessage);
-		this.ownedBy = null;
+		this.setOwnedBy(player);;
 	}
 
 	// Getters & Setters
@@ -64,9 +64,6 @@ public class FieldArea extends Area {
 			throw new IllegalArgumentException("Cannot set owned by to null");
 		}
 
-		if (this.ownedBy != null) {
-			throw new IllegalArgumentException("FieldArea is already owned");
-		}
 		
 		this.ownedBy = ownedBy;
 	}

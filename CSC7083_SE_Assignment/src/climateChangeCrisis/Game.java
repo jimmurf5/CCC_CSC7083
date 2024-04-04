@@ -28,7 +28,7 @@ public class Game {
 
 	// Constructor
 
-	public Game( ArrayList<Area> squareOrder, ArrayList<Field> fields) {
+	public Game(ArrayList<Area> squareOrder, ArrayList<Field> fields) {
 		this.setSquareOrder(squareOrder);
 		this.setFields(fields);
 	}
@@ -38,19 +38,24 @@ public class Game {
 	public static void main(String[] args) {
 		// Setting up all Game objects
 		// Developments x 6
+		// Special areas (blank and GO)
+		SpecialArea goSquare = new SpecialArea("GO Square", GO_VALUE);
+		SpecialArea blankSquare = new SpecialArea("BLANK Square", 0);
+		
 		ArrayList<Development> developmentsArrayL = createDevelopments();
+		Player player = new Player("Default", goSquare);
 
 		// areas arrayLists per Field (2 x 2 and 2 x 3 areas)
-		ArrayList<Area> waterFoodAreaArrayL = createWFFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> bioLossAreaArrayL = createBLFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> risingSeasAreaArrayL = createRSFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> ExtremeWeatherAreaArrayL = createEWFieldAreas(developmentsArrayL.get(0));
+		ArrayList<Area> waterFoodAreaArrayL = createWFFieldAreas(developmentsArrayL.get(0),player);
+		ArrayList<Area> bioLossAreaArrayL = createBLFieldAreas(developmentsArrayL.get(0),player);
+		ArrayList<Area> risingSeasAreaArrayL = createRSFieldAreas(developmentsArrayL.get(0), player);
+		ArrayList<Area> ExtremeWeatherAreaArrayL = createEWFieldAreas(developmentsArrayL.get(0), player);
 
 		// 4 Fields (passing in the areas arrayLists)
-		Field waterFoodShortage = new Field("Water and Food Shortage", waterFoodAreaArrayL, 5, 7);
-		Field biodiversityLoss = new Field("Biodiversity Loss", bioLossAreaArrayL, 5, 7);
-		Field risingSeas = new Field("Rising Seas", risingSeasAreaArrayL, 2, 4);
-		Field extremeWeather = new Field("Extreme Weather", ExtremeWeatherAreaArrayL, 8, 10);
+		Field waterFoodShortage = new Field("Water and Food Shortage", waterFoodAreaArrayL, 5, 7, player);
+		Field biodiversityLoss = new Field("Biodiversity Loss", bioLossAreaArrayL, 5, 7, player);
+		Field risingSeas = new Field("Rising Seas", risingSeasAreaArrayL, 2, 4, player);
+		Field extremeWeather = new Field("Extreme Weather", ExtremeWeatherAreaArrayL, 8, 10, player);
 
 		ArrayList<Field> fields = new ArrayList<>();
 		fields.add(waterFoodShortage);
@@ -58,21 +63,15 @@ public class Game {
 		fields.add(risingSeas);
 		fields.add(extremeWeather);
 
-		// Special areas (blank and GO)
-		SpecialArea goSquare = new SpecialArea("GO Square", GO_VALUE);
-		SpecialArea blankSquare = new SpecialArea("BLANK Square", 0);
-
 		// create squareOrder exactly as per the last drawing order
 		ArrayList<Area> squaresOrdered = createSquareOrder(goSquare, waterFoodAreaArrayL, bioLossAreaArrayL,
 				blankSquare, risingSeasAreaArrayL, ExtremeWeatherAreaArrayL);
-
-		
 
 		// pass them into Game constructor
 		Game game = new Game(squaresOrdered, fields);
 
 		game.setDevObjects(developmentsArrayL);
-		
+
 		game.registerPlayers(goSquare);
 		game.handleTurn(game.players.get(0));
 
@@ -124,8 +123,6 @@ public class Game {
 	public void setFields(ArrayList<Field> fields) {
 		this.fields = fields;
 	}
-	
-	
 
 	// Logic methods
 
@@ -178,8 +175,6 @@ public class Game {
 	public void setDevObjects(ArrayList<Development> devObjects) {
 		this.devObjects = devObjects;
 	}
-	
-	
 
 	/**
 	 * @return the isGameOver
@@ -204,27 +199,29 @@ public class Game {
 		System.out.println();
 		System.out.println("------------------------------------------------------------");
 		System.out.println();
-		System.out.println("It's " + player.getPlayerName() + "'s turn!");
+		System.out.println("It's " + player.getPlayerName() + "'s turn!  They have "+player.getResources()+" eco tokens.");
 		boolean canDev = checkDevelopmentOption(player);
 		if (canDev) {
 			calculateDevelopmentOptions(player);// makeDevelopment called within this method
 		}
 		takeTurn(player);
-		
-		if (player.getResources()<0) {
-			System.out.printf("OH DEAR!  %s has run out of eco tokens.  Game is now over.  Calculating standings...%n", player.getPlayerName());
+
+		if (player.getResources() < 0) {
+			System.out.printf("OH DEAR!  %s has run out of eco tokens.  Game is now over.  Calculating standings...%n",
+					player.getPlayerName());
 			this.setGameOver(true);
 			calculateStandings();
 		}
-		if (!isGameOver){
+		if (!isGameOver) {
 			handleTurn(getNextPlayer(player));
 		}
 		sc.close();
-	
+
 	}
 
 	private Player getNextPlayer(Player player) {
-		int nextIndex = (getPlayers().indexOf(player) + 1) % players.size(); //cycles round to start of playerOrder if end is reached
+		int nextIndex = (getPlayers().indexOf(player) + 1) % players.size(); // cycles round to start of playerOrder if
+																				// end is reached
 		Player nextPlayer = getPlayers().get(nextIndex);
 		return nextPlayer;
 	}
@@ -298,21 +295,22 @@ public class Game {
 		}
 	}
 
-	private int offerDevelopment(ArrayList<FieldArea> fieldAreas, ArrayList<Integer> devCosts, ArrayList<Development> devObjs) {
+	private int offerDevelopment(ArrayList<FieldArea> fieldAreas, ArrayList<Integer> devCosts,
+			ArrayList<Development> devObjs) {
 		System.out.println("Areas available for Development: ");
 		for (int i = 0; i < fieldAreas.size(); i++) {
 			System.out.printf("%s. Area: %s, Cost: %d%n", (i + 1), fieldAreas.get(i).getAreaName(), devCosts.get(i));
-			System.out.printf("Development option: %2%n",devObjs.get(i+1).getDescription());
+			System.out.printf("Development option: %s%n", devObjs.get(i + 1).getDescription());
 		}
 		System.out.println(
 				"Please choose which Area you wish to Develop: (enter corresponding number or 'N' to change your mind");
-		String option = sc.nextLine().toUpperCase().trim();
+		String option = sc.next().toUpperCase().trim();
 
 		while ((Integer.valueOf(option) < 1) && (Integer.valueOf(option) > fieldAreas.size() - 1)
 				&& (!option.equals("N"))) {
 			System.out.println("Please select a valid option");
 			sc.nextLine();
-			option = sc.nextLine().toUpperCase().trim();
+			option = sc.next().toUpperCase().trim();
 		}
 
 		if (option.equals("N")) {
@@ -325,7 +323,7 @@ public class Game {
 
 	private void makeDevelopment(Player player, FieldArea fieldAreaToDevelop, Integer costToDev) {
 
-		Field fieldBeingUpdated= changeDevLevel(player, fieldAreaToDevelop);
+		Field fieldBeingUpdated = changeDevLevel(player, fieldAreaToDevelop);
 		int neg = costToDev * -1;
 		updatePlayerBalance(player, neg);
 		System.out.printf("Congratulations! %s has been developed to %s%n", fieldAreaToDevelop.getAreaName(),
@@ -350,6 +348,7 @@ public class Game {
 		System.out.println("First die shows a " + die1);
 		System.out.println("Second die shows a " + die2);
 		System.out.println("You move " + result + " spaces!");
+		System.out.println();
 		return result;
 	}
 
@@ -366,129 +365,200 @@ public class Game {
 			throw new IllegalArgumentException("Player cannot be null.");
 		}
 		
-		System.out.printf("You have landed on %s%n", player.getCurrentArea());
+		String currentField="";
+		int numSquares=0;
+		int noOwned=0;
+		ArrayList<String> otherOwners = new ArrayList<>();
+		ArrayList<String> otherAreas = new ArrayList<>();
 		
-		//SWITCH ON SQUARE OWNERSHIP
-	
-		//check if square player landed on is FieldArea
+		for (Field field:fields) {
+			if (field.getAreas().contains(player.getCurrentArea())) {
+				currentField= field.getFieldName();
+				numSquares=field.getAreas().size();
+				for (Area area: field.getAreas()) {
+					FieldArea fieldArea = ((FieldArea) area);
+					if (fieldArea.getOwnedBy().equals(player)) {
+						noOwned++;
+					} else {	
+						if (!fieldArea.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")) {
+							otherOwners.add(fieldArea.getOwnedBy().getPlayerName());
+							otherAreas.add(fieldArea.getAreaName());
+						}
+						
+					}
+				}
+			}
+		}
+
+		if (player.getCurrentArea().isBelongsToField()){
+			System.out.printf("You have landed on %s (%s)%n", player.getCurrentArea().getAreaName(), currentField.toUpperCase());
+			System.out.printf("There are %d squares in this Field.  You currently own %d of them.  %n", numSquares, noOwned);
+			if(otherOwners.size()>0) {
+				System.out.printf("Owner(s) of other squares in this Field:%n");
+				for (int i=0; i<otherOwners.size(); i++) {
+					System.out.printf("%s: %s%n", otherOwners.get(i), otherAreas.get(i));
+				}
+				System.out.println();
+			}
+		}else {
+			System.out.printf("You have landed on %s%n", player.getCurrentArea().getAreaName());
+		}
+		
+
+		// SWITCH ON SQUARE OWNERSHIP
+
+		// check if square player landed on is FieldArea
 		if (player.getCurrentArea().isBelongsToField()) {
 			FieldArea fieldArea = null;
-			
-			//cast to gain access to methods
+
+			// cast to gain access to methods
 			fieldArea = ((FieldArea) player.getCurrentArea());
-			
-			//owned by player
-			if (fieldArea.getOwnedBy().equals(player)){
+
+			// unowned
+			if (fieldArea.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")){
+				int offerCounter = 0;
+				offerSquare(player, offerCounter, fieldArea);
+				
+				//owned by current player
+			} else if (fieldArea.getOwnedBy().equals(player)) {
 				System.out.println("This is your square, you incur no cost by landing on it.");
-				
-				//unowned square
-			} else if (fieldArea.getOwnedBy()==null){
-				int offerCounter=0;
-				offerSquare(player, offerCounter);
-				
-				//another player owns it
-			}else {
+
+				//owned by another player
+			}  else {
 				payDonation(player, fieldArea);
 			}
-		
-			//If not, square is SpecialArea
-		}else {
+
+			// If not, square is SpecialArea
+		} else {
 			if (player.getCurrentArea().getAreaName().equals("GO Square")) {
 				System.out.println("You have landed on the GO Square.  No further actions available.");
 			} else if (player.getCurrentArea().getAreaName().equals("BLANK Square")) {
 				System.out.println("You have landed on the BLANK Square.  Sit this one out.");
 			}
 		}
+
+	}
+
+	public void offerSquare(Player player, int offerCounter, FieldArea fieldArea) {
 		
-		}
-	
-	public void offerSquare(Player player, int offerCounter) {
-		FieldArea originalSquare= null;
-		if (offerCounter == 0) {
-			originalSquare = ((FieldArea) player.getCurrentArea());
-			System.out.println(originalSquare.getInitialSquareMessage());
-		}
-		
-		if (offerCounter == players.size()-1) {
+		System.out.println("****** "+fieldArea.getInitialSquareMessage()+" ******");
+		if (offerCounter == players.size()) {
 			System.out.println("No player wishes to purchase square.");
 			return;
 		}
 		
-
 		// a switch to determine what the players landing obligation is if any
 		// and also set the cost to buy if there is one for the square
-		int costToBuy = 0;
-		int index = squareOrder.indexOf(originalSquare);
+		int costToBuy=0;
+		int index = squareOrder.indexOf(fieldArea);
 		switch (index) {
 		case 0:
 			return;
 		case 1:
 		case 2:
 		case 3:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy= fields.get(0).getareaBuyCost();
 			break;
 		case 4:
 		case 5:
 		case 6:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(1).getareaBuyCost();
 			break;
 		case 7:
 			return;
 		case 8:
 		case 9:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(2).getareaBuyCost();
 			break;
 		case 10:
 		case 11:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(3).getareaBuyCost();
 			break;
 		default:
 			break;
 		}
 		
-			// make sure the player can afford it
-			if (player.getResources() < costToBuy) {
-				System.out.println("You have insufficient resources at this time and cannot purchase this square.");
-				System.out.println("The square will be offered to the other players.");
-				
-				offerCounter++;
-					
-				offerSquare(getNextPlayer(player), offerCounter);
+		if (offerCounter>0) {
+			System.out.println();
+			String currentField="";
+			int numSquares=0;
+			int noOwned=0;
+			ArrayList<String> otherOwners = new ArrayList<>();
+			ArrayList<String> otherAreas = new ArrayList<>();
+			
+			for (Field field:fields) {
+				if (field.getAreas().contains(fieldArea)) {
+					currentField= field.getFieldName();
+					numSquares=field.getAreas().size();
+					for (Area area: field.getAreas()) {
+						FieldArea fieldA = ((FieldArea) area);
+						if (fieldA.getOwnedBy().equals(player)) {
+							noOwned++;
+						} else {
+							if (!fieldA.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")) {
+								otherOwners.add(fieldA.getOwnedBy().getPlayerName());
+								otherAreas.add(fieldA.getAreaName());
+							}
+						}
+					}
+				}
 			}
 
-			System.out.printf("Would you like to purchase it? The cost is %d. Type Y/ N.%n", costToBuy);
-			System.out.println("Y for yes, N will offer the opportuny to purchase to the other players.");
-
-			String playerResponse;
-
-			do {
-				System.out.print("Enter your choice, only Y and N are valid inputs: ");
-				playerResponse = sc.nextLine().trim().toLowerCase();
-
-				switch (playerResponse) {
-				case "y":
-					
-					// change the squares dev level, change the squares ownership
-					originalSquare.setOwnedBy(player);
-					changeDevLevel(player, originalSquare);
-					int neg= costToBuy * -1;
-					updatePlayerBalance(player, neg);
-					System.out.printf("%s has purchased %s%n",player.getPlayerName(),originalSquare.getAreaName());
-					System.out.printf("%s now has %d eco tokens.%n", player.getPlayerName(), player.getResources());
-					System.out.println("Turn complete!");
-					break;
-				case "n":
-					offerCounter++;
-					offerSquare(getNextPlayer(player), offerCounter);
-					break;
-				default:
-					System.out.println("Invalid input. Please enter 'Y' or 'N'.");
-					break;
+			if (fieldArea.isBelongsToField()){
+				System.out.printf("%s, you have the opportunity to purchase %s (%s) for %d eco tokens...%n", player.getPlayerName(),fieldArea.getAreaName(), currentField.toUpperCase(),costToBuy);
+				System.out.printf("There are %d squares in this Field.  You currently own %d of them.  %n", numSquares, noOwned);
+				if(otherOwners.size()>0) {
+					System.out.printf("Owner(s) of other squares in this Field:%n");
+					for (int i=0; i<otherOwners.size(); i++) {
+						System.out.printf("%s: %s%n", otherOwners.get(i), otherAreas.get(i));
+					}
+					System.out.println();
 				}
-			} while (!playerResponse.equals("y") && !playerResponse.equals("n"));
-		
-	}
+			}
+		}
 
+
+		// make sure the player can afford it
+		if (player.getResources() < costToBuy) {
+			System.out.println("But unfortunately you have insufficient resources at this time and cannot purchase this square.");
+			System.out.println("The square will be offered to the other players.");
+
+			offerCounter++;
+			offerSquare(getNextPlayer(player), offerCounter, fieldArea);
+		}
+
+		System.out.printf("Would you like to purchase it? The cost is %d eco tokens. Type Y/ N.%n", costToBuy);
+		System.out.println("Y for yes, N will offer the opportunity to purchase to the other players.");
+
+		String playerResponse;
+
+		do {
+			System.out.print("Enter your choice, only Y and N are valid inputs: ");
+			playerResponse = sc.next().trim().toLowerCase();
+
+			switch (playerResponse) {
+			case "y":
+
+				// change the squares dev level, change the squares ownership
+				fieldArea.setOwnedBy(player);
+				changeDevLevel(player, fieldArea);
+				int neg = costToBuy * -1;
+				updatePlayerBalance(player, neg);
+				System.out.printf("%s has purchased %s!%n", player.getPlayerName(), fieldArea.getAreaName());
+				System.out.printf("%s now has %d eco tokens.%n", player.getPlayerName(), player.getResources());
+				System.out.println("Turn complete!");
+				break;
+			case "n":
+				offerCounter++;
+				offerSquare(getNextPlayer(player), offerCounter, fieldArea);
+				break;
+			default:
+				System.out.println("Invalid input. Please enter 'Y' or 'N'.");
+				break;
+			}
+		} while (!playerResponse.equals("y") && !playerResponse.equals("n"));
+
+	}
 
 	public boolean checkDevelopmentOption(Player player) throws IllegalArgumentException {
 
@@ -531,21 +601,21 @@ public class Game {
 			}
 		}
 
-		boolean doesOwnershipNeedChanged = false;
+		boolean doesFieldOwnershipNeedChanged = false;
 		for (FieldArea area : fieldAreas) {
 			if (!area.equals(fieldAreaToDev)) {
 				if (!area.getOwnedBy().equals(player)) {
-					doesOwnershipNeedChanged = false;
+					doesFieldOwnershipNeedChanged = false;
 					break;
 				} else if (area.getOwnedBy().equals(player)) {
-					doesOwnershipNeedChanged = true;
+					doesFieldOwnershipNeedChanged = true;
 				}
 
 			}
 		}
 
-		if (doesOwnershipNeedChanged) {
-			fieldAreaToDev.setOwnedBy(player);
+		if (doesFieldOwnershipNeedChanged) {
+			fieldBeingUpdated.setownedBy(player);
 
 		}
 		return fieldBeingUpdated;
@@ -558,52 +628,64 @@ public class Game {
 	}
 
 	public void payDonation(Player player, FieldArea fieldArea) {
-		
+
 		Double costMultiplier = fieldArea.getdevelopmentObj().getCostMultiplier();
 		Integer donationCost = 0;
-		
-		for (Field field: this.fields) {
+
+		for (Field field : this.fields) {
 			if (field.getAreas().contains(fieldArea)) {
-				
-				donationCost= field.getareaDonationCost();
-				
+
+				donationCost = field.getareaDonationCost();
+
 			}
 		}
-		
-		Double multipliedCost = ((Integer) donationCost* costMultiplier);
+
+		Double multipliedCost = ((Integer) donationCost * costMultiplier);
 		int finalDonationCost;
 		finalDonationCost = multipliedCost.intValue();
 
-		//Get squareOwner
+		// Get squareOwner
 		Player owner = fieldArea.getOwnedBy();
-		System.out.printf("Unfortunately for you, %s currently owns %s.",owner.getPlayerName(),fieldArea.getAreaName());
-		
+		System.out.printf("Unfortunately for you, %s currently owns %s.  They convince you to make a donation for their cause...%n", owner.getPlayerName(),
+				fieldArea.getAreaName());
+		System.out.println();
+
 		int devLevel = fieldArea.getdevelopmentObj().getLevel();
-		if (devLevel>2) {
-			
-			switch(devLevel) {
-			case 3: System.out.println("Help them create a Sustainability Educational Programme that aims to educate individuals of all ages.");
+		if (devLevel > 2) {
+
+			switch (devLevel) {
+			case 3:
+				System.out.println(
+						"Help them create a Sustainability Educational Programme that aims to educate individuals of all ages.");
 				break;
-			case 4: System.out.println("Help them build an Eco Learning Centre which will promote environmental knowledge and skills.");
-			break;
-			case 5: System.out.println("Help them establish a Green Community Initiative to help empower communities and inspire positive change.");
-			break;
-			case 6: System.out.println("Help them form a Global Climate Accord to address urgent challenges posed by climate change.");
-			break;
-			default: System.out.println("Unrecognised Development Level");
-			break;
+			case 4:
+				System.out.println(
+						"Help them build an Eco Learning Centre which will promote environmental knowledge and skills.");
+				break;
+			case 5:
+				System.out.println(
+						"Help them establish a Green Community Initiative to help empower communities and inspire positive change.");
+				break;
+			case 6:
+				System.out.println(
+						"Help them form a Global Climate Accord to address urgent challenges posed by climate change.");
+				break;
+			default:
+				System.out.println("Unrecognised Development Level");
+				break;
+			}
+
 		}
 		
-		int donationNeg= finalDonationCost * -1;
+		int donationNeg = finalDonationCost * -1;
 		updatePlayerBalance(player, donationNeg);
 		updatePlayerBalance(owner, finalDonationCost);
-		System.out.printf("Paying %d eco tokens...",finalDonationCost);
-		System.out.printf("Updated balance for %s: %d eco tokens.%n",player.getPlayerName(),player.getResources());
-		System.out.printf("Updated balance for %s: %d eco tokens.%n",owner.getPlayerName(),owner.getResources());
+		System.out.printf("Paying %d eco tokens...%n", finalDonationCost);
+		System.out.printf("Updated balance for %s: %d eco tokens.%n", player.getPlayerName(),
+				player.getResources());
+		System.out.printf("Updated balance for %s: %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
 		
-		}
 	}
-
 
 	// Method to update player's current square
 	// This method calculates the new position of the player after rolling the dice
@@ -623,8 +705,11 @@ public class Game {
 		if (newIndex > squareOrder.size()) {
 			int newSquareIdx = (newIndex - squareOrder.size());
 			player.setCurrentArea(squareOrder.get(newSquareIdx));
-			System.out.printf("%s has passed GO SQUARE and received %d additional funds! Updated amount: %d eco tokens%n",player.getPlayerName(), GO_VALUE, player.getResources() );
 			updatePlayerBalance(player, GO_VALUE);
+			System.out.printf(
+					"%s has passed GO SQUARE and received %d additional funds! Updated amount: %d eco tokens%n",
+					player.getPlayerName(), GO_VALUE, player.getResources());
+			System.out.println();
 		} else if (newIndex < squareOrder.size()) {
 			player.setCurrentArea(squareOrder.get(newIndex));
 		}
@@ -634,7 +719,7 @@ public class Game {
 	public void endGame(Player player) {
 
 		System.out.print("Are you sure you want to quit the game? (Y/N): ");
-		String confirmation = sc.nextLine().trim().toUpperCase();
+		String confirmation = sc.next().trim().toUpperCase();
 
 		if (confirmation.equals("Y")) {
 			System.out.println(player.getPlayerName() + " has quit the game.");
@@ -646,21 +731,23 @@ public class Game {
 	}
 
 	private void calculateStandings() {
-		Collections.sort(players, new CompareByResources());
-		
-		for (Player player: players) {
+		Collections.sort(players, new CompareByResources().reversed());
+
+		for (Player player : players) {
 			if (players.get(0).equals(player)) {
-				System.out.printf("WINNER: %n"
-						+ "%d. %s: %d eco tokens",players.indexOf(player),player.getPlayerName(), player.getResources());
+				System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player),
+						player.getPlayerName(), player.getResources());
 			} else {
-				
-				System.out.printf("%d. %s: %d eco tokens",players.indexOf(player),player.getPlayerName(), player.getResources());
+
+				System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player), player.getPlayerName(),
+						player.getResources());
 			}
-			
+
 		}
-		
+
+		System.out.println();
 		System.out.println("***** ~ WE HOPE YOU HAD FUN! THANKS FOR PLAYING! ~ *****");
-		
+
 	}
 
 	/**
@@ -684,10 +771,11 @@ public class Game {
 		String input;
 		do {
 			System.out.print("Enter your choice (1 or 2): ");
-			input = sc.nextLine();
+			System.out.println();
+			input = sc.next();
 			if ((!input.equals("1")) && (!input.equals("2"))) {
 				System.out.println("Invalid input.");
-				sc.nextLine();
+				sc.next();
 			}
 		} while ((!input.equals("1")) && (!input.equals("2")));
 
@@ -724,7 +812,7 @@ public class Game {
 
 		String playerName;
 		int noPlayers;
-		
+
 		System.out.println("***** WELCOME TO CLIMATE CHANGE CRISIS *****");
 		System.out.println();
 		System.out.println("Please enter number of players:");
@@ -735,9 +823,9 @@ public class Game {
 					MAX_PLAYER_NUMBER);
 			System.out.println("Please enter number of players");
 			noPlayers = sc.nextInt();
-			sc.nextInt();
 		}
 
+		// ensuring we get the number of players playing
 		while (players.size() < noPlayers) {
 			if (players.size() == 0) {
 				System.out.println("Please enter first player name:");
@@ -745,41 +833,37 @@ public class Game {
 				System.out.println("Please enter next player name:");
 			}
 
-			playerName = sc.nextLine().trim();
-			Player newPlayer = new Player(playerName, goSquare);
-			players.add(newPlayer);
-			for (Player player : players) {
-				if (player.getPlayerName().equals(playerName)) {
+			playerName = sc.next();
+			Player player = new Player(playerName, goSquare);
+			
+				
+			while (players.contains(player)){
 					System.out.println("Player name already exists, please choose a different name.");
-					sc.nextLine();
-					playerName = sc.nextLine().trim();
-					Player newPlayer1 = new Player(playerName, goSquare);
-					players.remove(newPlayer);
-					players.add(newPlayer1);
-					continue;
-				} else {
-					Player nextPlayer = new Player(playerName, goSquare);
-					players.add(nextPlayer);
-					System.out.printf("%s has been successfully registered as a player!%n", newPlayer.getPlayerName());
-					sc.nextLine();
+					player.setPlayerName(sc.next().trim()); 
 				}
-
-				System.out.printf(
-						"All %d players have been successfully registered!  Now starting game...%n",
-						players.size());
-				System.out.println();
+			players.add(player);
+			System.out.println();
+			System.out.printf("%s has been successfully registered as a player!%n", player.getPlayerName());
+			System.out.println();
 			}
+			
+			System.out.println("------------------------------------------------------------");
+			System.out.printf("All %d players have been successfully registered!  Now starting game...%n", players.size());
+			System.out.println();
+			Collections.shuffle(players);
 
+			System.out.println("Player order for this game:");
+
+			for (Player player : players) {
+				System.out.printf("Player %d: %s%n", players.indexOf(player)+1, player.getPlayerName());
+			}
+			
+			System.out.printf("All players start with %d eco tokens.  Good luck!%n", players.get(0).getResources());
+			System.out.println();
+
+			this.setPlayers(players);
 		}
-		Collections.shuffle(players);
-		System.out.println("Player order for this game:");
-		for (Player player : players) {
-			System.out.printf("Player %d: %s%n", players.indexOf(player), player.getPlayerName());
-		}
 
-		this.setPlayers(players);
-
-	}
 
 	// OBJECT CREATION METHODS
 
@@ -787,50 +871,60 @@ public class Game {
 		ArrayList<Development> developments = new ArrayList<>();
 		developments.add(new Development(1, "an unowned Square", "Square is currently available!", 1.00));
 		developments.add(new Development(2, "an owned Square", "Square already owned by player", 1.20));
-		developments
-				.add(new Development(3, "a Sustainability Educational Programme", "Create a Sustainability Educational Programme!", 1.40));
+		developments.add(new Development(3, "a Sustainability Educational Programme",
+				"Create a Sustainability Educational Programme!", 1.40));
 		developments.add(new Development(4, "an Eco Learning Centre", "Build an Eco Learning Centre!", 1.60));
-		developments
-				.add(new Development(5, "a Green Community Action Initiative", "Establish a Green Community Action Initiative!", 1.80));
+		developments.add(new Development(5, "a Green Community Action Initiative",
+				"Establish a Green Community Action Initiative!", 1.80));
 		developments.add(new Development(6, "a Global Climate Accord", "Form a Global Climate Accord!", 3.00));
 
 		return developments;
 
 	}
 
-	private static ArrayList<Area> createWFFieldAreas(Development devObj) {
+	private static ArrayList<Area> createWFFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Wellspring Woe", devObj, "The once gushing wells and springs have dried up; please support locals by investing in clean water technologies!"));
-		fieldAreas.add(new FieldArea("Parched Pastures", devObj, "Dry earth stretches as far as the eye can see; invest in irrigation systems to revive the local landscape!"));
-		fieldAreas.add(new FieldArea("Harvest Havoc", devObj, "A devastating drought has withered crops; help farmers invest in drought-resistant farming techniques!"));
+		fieldAreas.add(new FieldArea("Wellspring Woe", devObj,
+				"The once gushing wells and springs have dried up; please support locals by investing in clean water technologies!", player));
+		fieldAreas.add(new FieldArea("Parched Pastures", devObj,
+				"Dry earth stretches as far as the eye can see; invest in irrigation systems to revive the local landscape!", player));
+		fieldAreas.add(new FieldArea("Harvest Havoc", devObj,
+				"A devastating drought has withered crops; help farmers invest in drought-resistant farming techniques!", player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createBLFieldAreas(Development devObj) {
+	private static ArrayList<Area> createBLFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Intruder Infestation", devObj, "Pesky fire ants are causing chaos to the habitat. Invest in pest control plans to restore the ecosystem!"));
-		fieldAreas.add(new FieldArea("Deforestation Disaster", devObj, "The once towering trees are now reduced to barren, exposed stumps. Revive reforestation efforts by planting trees!"));
-		fieldAreas.add(new FieldArea("Silent Species", devObj, "You find yourself in a once vibrant ecosystem that has fallen silent.  Establish a new state-of-the-art breeding centre!"));
+		fieldAreas.add(new FieldArea("Intruder Infestation", devObj,
+				"Pesky fire ants are causing chaos to the habitat. Invest in pest control plans to restore the ecosystem!", player));
+		fieldAreas.add(new FieldArea("Deforestation Disaster", devObj,
+				"The once towering trees are now reduced to barren, exposed stumps. Revive reforestation efforts by planting trees!", player));
+		fieldAreas.add(new FieldArea("Silent Species", devObj,
+				"You find yourself in a once vibrant ecosystem that has fallen silent.  Establish a new state-of-the-art breeding centre!", player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createRSFieldAreas(Development devObj) {
+	private static ArrayList<Area> createRSFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Seashore Sorrow", devObj, "Encroaching waves reveal the toll of rising sea levels. Protect the coast by building sea walls and restoring sand dunes!"));
-		fieldAreas.add(new FieldArea("Coastal Catastrophe", devObj, "An oil tanker rupture has unleashed a deluge of crude oil. Invest in oil booms to help contain the spread of the oil!"));
+		fieldAreas.add(new FieldArea("Seashore Sorrow", devObj,
+				"Encroaching waves reveal the toll of rising sea levels. Protect the coast by building sea walls and restoring sand dunes!", player));
+		fieldAreas.add(new FieldArea("Coastal Catastrophe", devObj,
+				"An oil tanker rupture has unleashed a deluge of crude oil. Invest in oil booms to help contain the spread of the oil!", player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createEWFieldAreas(Development devObj) {
+	private static ArrayList<Area> createEWFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Hurricane Hit", devObj, "Brace yourself as a powerful hurricane is on its way! Help build a sturdy shelter!"));
-		fieldAreas.add(new FieldArea("Wicked Wildfire", devObj, "A blazing fire has swept its way through the forest once more. Fund emergency helicopters to help put out the fire!"));
+		fieldAreas.add(new FieldArea("Hurricane Hit", devObj,
+				"Brace yourself as a powerful hurricane is on its way! Help build a sturdy shelter!", player));
+		fieldAreas.add(new FieldArea("Wicked Wildfire", devObj,
+				"A blazing fire has swept its way through the forest once more. Fund emergency helicopters to help put out the fire!", player));
 
 		return fieldAreas;
 
