@@ -20,7 +20,7 @@ public class Player {
 
 	
 	//setting constant for initial resources given to player 
-	private static final int INITIAL_RESOURCES = 50;
+	private static final int INITIAL_RESOURCES = 200;
 	
 	
 	//declare private instance vars
@@ -91,8 +91,6 @@ public class Player {
 	 * @param resources the resources to set
 	 */
 	public void setResources(int resources){
-
-		
 		this.resources = resources; 
 	}
 
