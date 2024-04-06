@@ -6,6 +6,8 @@ package climateChangeCrisis;
 *@author FERGUSON_ROBERT_40040521 
 */
 
+import java.util.Objects;
+
 /**
  * @author alex
  */
@@ -18,7 +20,7 @@ public class Player {
 
 	
 	//setting constant for initial resources given to player 
-	private static final int INITIAL_RESOURCES = 50;
+	private static final int INITIAL_RESOURCES = 200;
 	
 	
 	//declare private instance vars
@@ -89,12 +91,6 @@ public class Player {
 	 * @param resources the resources to set
 	 */
 	public void setResources(int resources){
-		
-		if (resources < 0) {
-			//player goes bankrupt if resources fall below zero 
-			//trigger an endGame() method that calculates the standings and informs the user
-		} 
-		
 		this.resources = resources; 
 	}
 
@@ -134,6 +130,25 @@ public class Player {
 	public void setQuitGame(boolean quitGame) {
 	    // If the game has a specific state or actions to perform when quitting, handle them here
 	    this.quitGame = quitGame;
+	}
+
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(playerName);
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		return Objects.equals(playerName, other.playerName);
 	}
 
 

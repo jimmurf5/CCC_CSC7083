@@ -4,8 +4,8 @@ public abstract class Area {
 
 	// Constants for business rules
 
-	private static final int MIN_AREALENGTH = 10;
-	private static final int MAX_AREALENGTH = 30;
+	private static final int MIN_AREALENGTH = 5;
+	private static final int MAX_AREALENGTH = 50;
 
 	// instance vars
 

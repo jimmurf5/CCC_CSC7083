@@ -14,22 +14,22 @@ public class Game {
 
 	// Constants for business rules
 
-	private static final int MIN_PLAYER_NUMBER = 1;
+	private static final int MIN_PLAYER_NUMBER = 2;
 	private static final int MAX_PLAYER_NUMBER = 4;
+	private static final int GO_VALUE = 5;
+	private static final int ENDGAME_VALUE=600;
 
 	// Instance vars
 
 	private ArrayList<Player> players;
 	private ArrayList<Area> squareOrder;
 	private ArrayList<Field> fields;
-	// removed fieldOrder,playerOrder, min & max no of Players- none of these
-	// instance vars and Gs & Ss are required
-	// changes the constructor also
+	private ArrayList<Development> devObjects;
+	private boolean isGameOver;
 
 	// Constructor
 
-	public Game(ArrayList<Player> players, ArrayList<Area> squareOrder, ArrayList<Field> fields) {
-		this.setPlayers(players);
+	public Game(ArrayList<Area> squareOrder, ArrayList<Field> fields) {
 		this.setSquareOrder(squareOrder);
 		this.setFields(fields);
 	}
@@ -39,19 +39,24 @@ public class Game {
 	public static void main(String[] args) {
 		// Setting up all Game objects
 		// Developments x 6
+		// Special areas (blank and GO)
+		SpecialArea goSquare = new SpecialArea("GO Square", GO_VALUE);
+		SpecialArea blankSquare = new SpecialArea("BLANK Square", 0);
+
 		ArrayList<Development> developmentsArrayL = createDevelopments();
+		Player player = new Player("Default", goSquare);
 
 		// areas arrayLists per Field (2 x 2 and 2 x 3 areas)
-		ArrayList<Area> waterFoodAreaArrayL = createWFFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> bioLossAreaArrayL = createBLFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> risingSeasAreaArrayL = createRSFieldAreas(developmentsArrayL.get(0));
-		ArrayList<Area> ExtremeWeatherAreaArrayL = createEWFieldAreas(developmentsArrayL.get(0));
+		ArrayList<Area> waterFoodAreaArrayL = createWFFieldAreas(developmentsArrayL.get(0), player);
+		ArrayList<Area> bioLossAreaArrayL = createBLFieldAreas(developmentsArrayL.get(0), player);
+		ArrayList<Area> risingSeasAreaArrayL = createRSFieldAreas(developmentsArrayL.get(0), player);
+		ArrayList<Area> ExtremeWeatherAreaArrayL = createEWFieldAreas(developmentsArrayL.get(0), player);
 
 		// 4 Fields (passing in the areas arrayLists)
-		Field waterFoodShortage = new Field("Water and Food Shortage", waterFoodAreaArrayL, 5, 7);
-		Field biodiversityLoss = new Field("Biodiversity Loss", bioLossAreaArrayL, 5, 7);
-		Field risingSeas = new Field("Rising Seas", risingSeasAreaArrayL, 2, 4);
-		Field extremeWeather = new Field("Extreme Weather", ExtremeWeatherAreaArrayL, 8, 10);
+		Field waterFoodShortage = new Field("Water and Food Shortage", waterFoodAreaArrayL, 5, 7, player);
+		Field biodiversityLoss = new Field("Biodiversity Loss", bioLossAreaArrayL, 5, 7, player);
+		Field risingSeas = new Field("Rising Seas", risingSeasAreaArrayL, 2, 4, player);
+		Field extremeWeather = new Field("Extreme Weather", ExtremeWeatherAreaArrayL, 8, 10, player);
 
 		ArrayList<Field> fields = new ArrayList<>();
 		fields.add(waterFoodShortage);
@@ -59,57 +64,18 @@ public class Game {
 		fields.add(risingSeas);
 		fields.add(extremeWeather);
 
-		// Special areas (blank and GO)
-		SpecialArea goSquare = new SpecialArea("GO Square", 5);
-		SpecialArea blankSquare = new SpecialArea("BLANK Square", 0);
-
 		// create squareOrder exactly as per the last drawing order
 		ArrayList<Area> squaresOrdered = createSquareOrder(goSquare, waterFoodAreaArrayL, bioLossAreaArrayL,
 				blankSquare, risingSeasAreaArrayL, ExtremeWeatherAreaArrayL);
 
-		// registration method before game constructor to create Players list (already
-		// randomised & presented back)
-		ArrayList<Player> playersOrdered = registerPlayers(goSquare);
-
 		// pass them into Game constructor
-		Game game = new Game(playersOrdered, squaresOrdered, fields);
+		Game game = new Game(squaresOrdered, fields);
 
-		/** CHRIS AND ALEX COMMENTS **/
+		game.setDevObjects(developmentsArrayL);
 
-		// Need a check/loop construct for checking if at least 1 field is owned by a
-		// player before showing MAKE DEVELOPMENT OPTION
-		// option to make a Development should only be displayed to user when they own
-		// at least 1 FIELD.
-		// This is the first check that needs made on next user's turn
-		// options for Take Turn need broken down.
-		// will need to handle user input methods for makeDevelopment- sequence in
-		// itself, check the diagrams
+		game.registerPlayers(goSquare);
+		game.handleTurn(game.players.get(0));
 
-		// need to have an endGame() method which gets called/triggered when player
-		// Quits or resources drop to <0 (triggered in setResources in Player class)
-
-		// Need a check to see whether player has passed/landed on GO SQUARE.
-		// Get index of currentArea in squareOrder arrayList and add the diceRoll to
-		// it-> if >12 trigger the passGo method and makes
-		// changes to player balances, informing them
-
-		// Method for update player currentSquare
-		// Method for checking currentSquare attributes (development level etc-> cost
-		// multipliers x costDonation OR costBuy options)
-
-		// Method for updating player balances and communicating to players
-
-		// COMMS MESSAGES
-		// Messages for specialArea will be simple and always the same and set in the
-		// specialArea class
-		// messages for FieldAreas will be individually customised and in FieldArea
-		// class for each, when dev level is 1
-		// messages for FieldAreas will be generic for FieldAreas depending on their dev
-		// level- Development class needs fleshed out
-		// conditional logic based on currentArea attributes
-
-		// offer unwantedSquare method will also need implemented
-		// ***SEQUENCE DIAGRAMS WILL HELP WITH ALL OF THE ABOVE***
 	}
 
 	// Getters & Setters
@@ -118,7 +84,6 @@ public class Game {
 		return players;
 	}
 
-	// ADD VALIDATION FOR MIN AND MAX NO OF PLAYERS USING CONSTANTS IN REGISTRATION
 	/**
 	 * 
 	 * @param players
@@ -160,7 +125,71 @@ public class Game {
 		this.fields = fields;
 	}
 
-	// Methods
+	// Logic methods
+
+	// welcomeMenu- DONE
+	// registerPlayers- DONE
+
+	// (loop begins) with int to track playerOrder outside it- DONE
+
+	// taketurn:- DONE
+
+	// checkDevelopmentOption- DONE
+	// offerDevelopment- DONE
+	// makeDevelopment- DONE
+	// changeDevLevel- DONE
+	// updatePlayerBalance- DONE
+	// informPlayer- DONE
+
+	// rollDice- DONE
+	// updateCurrentArea- DONE
+
+	// pickupResources- DONE
+
+	// handleActions - switch on new currentArea conditions - DONE
+
+	// unowned- DONE
+	// offerSquare- DONE
+	// offerSquareOthers- DONE
+	// buySquare- DONE
+	// updatePlayerBalance- DONE
+
+	// ownedbyplayer- DONE
+	// inform that no action available- DONE
+
+	// ownedbyotherplayers- DONE
+	// makeDonation- DONE
+	// updatePlayerBalances- DONE
+
+	// quitGame- DONE
+
+	/**
+	 * @return the devObjects
+	 */
+	public ArrayList<Development> getDevObjects() {
+		return devObjects;
+	}
+
+	/**
+	 * @param devObjects the devObjects to set
+	 */
+	public void setDevObjects(ArrayList<Development> devObjects) {
+		this.devObjects = devObjects;
+	}
+
+	/**
+	 * @return the isGameOver
+	 */
+	public boolean isGameOver() {
+		return isGameOver;
+	}
+
+	/**
+	 * @param isGameOver the isGameOver to set
+	 */
+	public void setGameOver(boolean isGameOver) {
+		this.isGameOver = isGameOver;
+	}
 
 	/**
 	 * Handles a player's turn when taken
@@ -168,17 +197,161 @@ public class Game {
 	 * @param player
 	 */
 	public void handleTurn(Player player) {
+		System.out.println();
+		System.out.println("------------------------------------------------------------");
+		System.out.println();
+		System.out.println(
+				"It's " + player.getPlayerName() + "'s turn!  They have " + player.getResources() + " eco tokens.");
+		boolean canDev = checkDevelopmentOption(player);
+		if (canDev) {
+			calculateDevelopmentOptions(player);// makeDevelopment called within this method
+		}
+		takeTurn(player);
 
-		System.out.println("It's " + player.getPlayerName() + "'s turn!");
-		System.out.println(showOptions());
-		String input = sc.next();
-		handleUserInput(input);
-		// handleActions(player, area);
-		// int nextIndex = (getPlayerOrder().indexOf(player) + 1) %
-		// getPlayerOrder().size(); //cycles round to start of playerOrder if end is
-		// reached
-		// Player nextPlayer = getPlayerOrder().get(nextIndex);
-		// handleTurn(nextPlayer);
+		if (player.getResources() < 0 && !isGameOver) {
+			System.out.printf("OH DEAR!  %s has run out of eco tokens.  Game is now over.  Calculating standings...%n",
+					player.getPlayerName());
+			this.setGameOver(true);
+			calculateStandings();
+		}
+		if (!isGameOver) {
+			handleTurn(getNextPlayer(player));
+		}
+		sc.close();
+
+	}
+
+	private Player getNextPlayer(Player player) {
+		int nextIndex = (getPlayers().indexOf(player) + 1) % players.size(); // cycles round to start of playerOrder if
+																				// end is reached
+		Player nextPlayer = getPlayers().get(nextIndex);
+		return nextPlayer;
+	}
+
+	private void calculateDevelopmentOptions(Player player) {
+
+		ArrayList<Area> areasForDev = new ArrayList<>();
+		ArrayList<Integer> areaCosts = new ArrayList<>();
+		ArrayList<Double> devMultiplier = new ArrayList<>();
+		ArrayList<Area> fieldAreasForDev = new ArrayList<>();
+		ArrayList<Double> totalCost = new ArrayList<>();
+		ArrayList<Integer> devLevels = new ArrayList<>();
+		ArrayList<Development> devObjs = new ArrayList<>();
+		ArrayList<Development> FinalDevObjs = new ArrayList<>();
+		ArrayList<FieldArea> fieldAreasAvailForDev = new ArrayList<>();
+		ArrayList<Integer> totalCostsAvailForDev = new ArrayList<>();
+
+		for (Field field : this.fields) {
+			// check if field is owned by player- all areas should be level 2 and above
+			if (field.getownedBy().equals(player)) {
+
+				// add all the areas in this field to arrayList
+				areasForDev.addAll(field.getAreas());
+
+				FieldArea fieldArea;
+				// go through all areas and cast to fieldarea so we can access getDevelopmentObj
+				// per fieldArea
+				for (Area area : areasForDev) {
+
+					fieldArea = ((FieldArea) area);
+					fieldAreasForDev.add(fieldArea);
+					areaCosts.add(field.getareaBuyCost());
+					devMultiplier.add(fieldArea.getdevelopmentObj().getCostMultiplier());
+					devLevels.add(fieldArea.getdevelopmentObj().getLevel());
+					devObjs.add(fieldArea.getdevelopmentObj());
+					int idx = areaCosts.size() - 1;
+
+					totalCost.add((areaCosts.get(idx)) * (devMultiplier.get(idx)));
+				}
+
+				System.out.println("FIELDAREASFORDEV SIZE IS:" + fieldAreasForDev.size());
+
+				for (int i = 0; i < fieldAreasForDev.size(); i++) {
+
+					// ignore fieldareas development level 6 and fieldareas not affordable by player
+					if ((totalCost.get(i) < player.getResources()) || (!(devLevels.get(i) == 6))) {
+						// adding to final curated lists
+						FieldArea fieldA = ((FieldArea) fieldAreasForDev.get(i));
+						fieldAreasAvailForDev.add(fieldA);
+						int cost = totalCost.get(i).intValue();
+						totalCostsAvailForDev.add(cost);
+						FinalDevObjs.add(devObjs.get(i));
+					}
+
+				}
+
+			}
+
+		}
+
+		System.out.println("FIELDAREASAVAILABLEFORDEV(FINAL CURATED LIST) SIZE IS:" + fieldAreasForDev.size());
+		System.out.println("TOTALCOSTSAVAILABLEFORDEV SIZE IS:" + totalCostsAvailForDev.size());
+		System.out.println("FINALDEVOBJS SIZE IS:" + FinalDevObjs.size());
+
+		int index=0;
+		if(fieldAreasAvailForDev.isEmpty()) {
+			
+			index= -1;
+		}else {
+			// get finalchoice of fieldarea from user
+			index = offerDevelopment(fieldAreasAvailForDev, totalCostsAvailForDev, FinalDevObjs);
+			
+		}
+		
+
+		// if change their mind return null
+		if (index == -1) {
+			return;
+		} else {
+			FieldArea finalChoice = fieldAreasAvailForDev.get(index);
+			Integer costToDev = totalCostsAvailForDev.get(index);
+			makeDevelopment(player, finalChoice, costToDev);
+		}
+	}
+
+	private int offerDevelopment(ArrayList<FieldArea> fieldAreas, ArrayList<Integer> devCosts,
+			ArrayList<Development> devObjs) {
+		System.out.println("Areas available for Development: ");
+		for (int i = 0; i < fieldAreas.size(); i++) {
+			System.out.printf("%s. Area: %s, Cost: %d%n", (i + 1), fieldAreas.get(i).getAreaName(), devCosts.get(i));
+
+			int nextDevObjIdx = fieldAreas.get(i).getdevelopmentObj().getLevel();
+			System.out.printf("Development option: %s%n", this.devObjects.get(nextDevObjIdx).getDescription());
+		}
+		System.out.println(
+				"Please choose which Area you wish to Develop: (enter corresponding number or 'N' to change your mind)");
+		String option = sc.next().toUpperCase().trim();
+		
+		if (option.equals("N")) {
+			System.out.println("Player has chosen not to Develop");
+			return -1;
+		}
+
+		while ((Integer.valueOf(option) < 1) && (Integer.valueOf(option) > fieldAreas.size() - 1)
+				&& (!option.equals("N"))) {
+			System.out.println("Please select a valid option");
+			sc.nextLine();
+			option = sc.next().toUpperCase().trim();
+		}
+
+		return (Integer.valueOf(option) - 1);
+	}
+
+	private void makeDevelopment(Player player, FieldArea fieldAreaToDevelop, Integer costToDev) {
+
+		Field fieldBeingUpdated = changeDevLevel(player, fieldAreaToDevelop);
+		int neg = costToDev * -1;
+		updatePlayerBalance(player, neg);
+		System.out.printf("Congratulations! %s has been developed to %s%n", fieldAreaToDevelop.getAreaName(),
+				fieldAreaToDevelop.getdevelopmentObj().getName());
+		if (fieldAreaToDevelop.getdevelopmentObj().getLevel() == 6) {
+			System.out.printf(
+					"%s HAS REACHED MAXIMUM DEVELOPMENT CAPACITY! YOU ARE WELL ON YOUR WAY TO SAVE THE PLANET!%n",
+					fieldAreaToDevelop.getAreaName().toUpperCase());
+			System.out.println();
+		}
+		System.out.printf("%s now has %d eco tokens.%n", player.getPlayerName(), player.getResources());
+		System.out.println("Development complete!");
 	}
 
 	/**
@@ -195,641 +368,528 @@ public class Game {
 		System.out.println("First die shows a " + die1);
 		System.out.println("Second die shows a " + die2);
 		System.out.println("You move " + result + " spaces!");
+		System.out.println();
 		return result;
 	}
 
 	/**
-	 * Handles  a players actions after lands on an area
+	 * Handles a players actions after lands on an area
+	 * 
 	 * @param player, object of type player
-	 * @param area, object of type
+	 * @param area,   object of type
 	 * @throws IllegalArgumentException if player or area are null
 	 */
-	public void handleActions(Player player, Area area)throws IllegalArgumentException{
-		//some validation
-		if(area == null || player == null) {
-			throw new IllegalArgumentException("Neither player or area can be null.");
+	public void handleActions(Player player) throws IllegalArgumentException {
+
+		if (player == null) {
+			throw new IllegalArgumentException("Player cannot be null.");
 		}
-		//check if area is a field area
-		System.out.printf("You have landed on %s%n", area.getAreaName());
-		
-		//a switch to determine what the players landing obligation is if any
-		//and also set the cost to buy if there is one for the square
+
+		String currentField = "";
+		int numSquares = 0;
+		int noOwned = 0;
+		ArrayList<String> otherOwners = new ArrayList<>();
+		ArrayList<String> otherAreas = new ArrayList<>();
+
+		for (Field field : fields) {
+			if (field.getAreas().contains(player.getCurrentArea())) {
+				currentField = field.getFieldName();
+				numSquares = field.getAreas().size();
+				for (Area area : field.getAreas()) {
+					FieldArea fieldArea = ((FieldArea) area);
+					if (fieldArea.getOwnedBy().equals(player)) {
+						noOwned++;
+					} else {
+						if (!fieldArea.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")) {
+							otherOwners.add(fieldArea.getOwnedBy().getPlayerName());
+							otherAreas.add(fieldArea.getAreaName());
+						}
+
+					}
+				}
+			}
+		}
+
+		if (player.getCurrentArea().isBelongsToField()) {
+			System.out.printf("You have landed on %s (%s)%n", player.getCurrentArea().getAreaName(),
+					currentField.toUpperCase());
+			System.out.printf("There are %d squares in this Field.  You currently own %d of them.  %n", numSquares,
+					noOwned);
+			if (otherOwners.size() > 0) {
+				System.out.printf("Owner(s) of other squares in this Field:%n");
+				for (int i = 0; i < otherOwners.size(); i++) {
+					System.out.printf("%s: %s%n", otherOwners.get(i), otherAreas.get(i));
+				}
+				System.out.println();
+			}
+		} else {
+			System.out.printf("You have landed on %s%n", player.getCurrentArea().getAreaName());
+		}
+
+		// SWITCH ON SQUARE OWNERSHIP
+
+		// check if square player landed on is FieldArea
+		if (player.getCurrentArea().isBelongsToField()) {
+			FieldArea fieldArea = null;
+
+			// cast to gain access to methods
+			fieldArea = ((FieldArea) player.getCurrentArea());
+
+			// unowned
+			if (fieldArea.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")) {
+				int offerCounter = 0;
+				offerSquare(player, offerCounter, fieldArea);
+
+				// owned by current player
+			} else if (fieldArea.getOwnedBy().equals(player)) {
+				System.out.println("This is your square, you incur no cost by landing on it.");
+
+				// owned by another player
+			} else {
+				payDonation(player, fieldArea);
+			}
+
+			// If not, square is SpecialArea
+		} else {
+			if (player.getCurrentArea().getAreaName().equals("GO Square")) {
+				System.out.println("You have landed on the GO Square.  No further actions available.");
+			} else if (player.getCurrentArea().getAreaName().equals("BLANK Square")) {
+				System.out.println("You have landed on the BLANK Square.  Sit this one out.");
+			}
+		}
+
+	}
+
+	public void offerSquare(Player player, int offerCounter, FieldArea fieldArea) {
+
+		System.out.println("****** " + fieldArea.getInitialSquareMessage() + " ******");
+		if (offerCounter == players.size()) {
+			System.out.println("No player wishes to purchase square.");
+			return;
+		}
+
+		// a switch to determine what the players landing obligation is if any
+		// and also set the cost to buy if there is one for the square
 		int costToBuy = 0;
-		int index = squareOrder.indexOf(area);
+		int index = squareOrder.indexOf(fieldArea);
 		switch (index) {
 		case 0:
-			//call a method about blank start square
-			//or just display message and exit method?
 			return;
 		case 1:
 		case 2:
 		case 3:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(0).getareaBuyCost();
 			break;
 		case 4:
 		case 5:
 		case 6:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(1).getareaBuyCost();
 			break;
 		case 7:
-			System.out.println("Sit this one out.");
 			return;
 		case 8:
 		case 9:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(2).getareaBuyCost();
 			break;
 		case 10:
 		case 11:
-			costToBuy = fields.get(index).getareaBuyCost();
+			costToBuy = fields.get(3).getareaBuyCost();
 			break;
 		default:
 			break;
 		}
-		//caste area to field area to access methods of field area
-		FieldArea fieldArea = null;
-		if(area instanceof FieldArea) {
-			fieldArea = ((FieldArea)area);
-		}else {
-			// Handle the case where the areaSelected is not a FieldArea
-			
-			throw new IllegalArgumentException("Selected area is not a FieldArea.");
-		}
-		
-		if(!(fieldArea.getOwnedBy() == null && !(fieldArea.getOwnedBy() == player))) {
-			//then the fieldArea is in ownership and the player must pay
-			//call obligation info method
-		}else if (fieldArea.getOwnedBy() == player) {
-			System.out.println("This is your square, you incurr no cost by landing on it.");
-		}else {
-			// the fieldArea is not in ownership and the player has a purchase decision
-			System.out.printf("The square %s is not under ownership.%n", fieldArea.getAreaName());
-			
-			//make sure the player can afford it
-			if(player.getResources()<costToBuy) {
-				System.out.println("You have insufficient resources at this time and cannot purchase this square.");
-				System.out.println("The square will be offered to the other players.");
-			}
 
-			System.out.printf("Would you like to purchase it? The cost is %d. Type Y/ N.%n", costToBuy);
-			System.out.println("Y for yes, N will offer the opportuny to purchase to the other player/ s.");
-			
-			String playerResponse;
+		if (offerCounter > 0) {
+			System.out.println();
+			String currentField = "";
+			int numSquares = 0;
+			int noOwned = 0;
+			ArrayList<String> otherOwners = new ArrayList<>();
+			ArrayList<String> otherAreas = new ArrayList<>();
 
-			do {
-				System.out.print("Enter your choice, only Y and N are valid inputs: ");
-				playerResponse = sc.nextLine().trim().toLowerCase();
-
-				switch (playerResponse) {
-				case "y":
-					// Player wants to buy
-					//change the squares dev level, change the squares ownership
-					fieldArea.setOwnedBy(player, null);//needs to fix this, cant access array
-					updatePlayerBalance(player, costToBuy);//update player balance
-					break;
-				case "n":
-					// Player doesn't want to buy
-					// Offer to other players
-					// Implement the logic here
-					break;
-				default:
-					System.out.println("Invalid input. Please enter 'Y' or 'N'.");
-					break;
-				}
-			} while (!playerResponse.equals("y") && !playerResponse.equals("n"));
-		}
-		}
-		
-			
-
-		// If area.ownedByPlayer = true, show obligation info (Player resource exchange)
-		// Else prompt player for decision to buy or offer unwanted square
-
-		// If player buys square, show buy info, set ownership to player (Player
-		// resource change)
-		// Else getPlayerOrder and options are shown to next player if
-		// hasSufficientResources = true
-		// If this player buys square, show buy info, set ownership to this player
-		// (Player resource change)
-		// Else getPlayerOrder again and repeat until playerOrder is exhausted or area
-		// is bought
-
-	/**
-	 * this method gives a player the opportunity to decide weather or not to make a development decision
-	 * after first checking if the player is eligible to make a development decision
-	 * 
-	 * @param player, an object of type player
-	 * @param fields, an arraylist of objects of type Field
-	 * @throws IllegalArgumentException if the player is null, or if the arraylist is null or empty
-	 */
-	public void offerDevOpportunyIfAvailable(Player player, ArrayList<Field> fields) throws IllegalArgumentException {
-		// some validation first
-		if (fields == null) {
-			throw new IllegalArgumentException("The list was null, that is invalid.");
-		} else if (fields.isEmpty()) {
-			throw new IllegalArgumentException("The list was empty, that is not valid.");
-		} else if (player == null) {
-			throw new IllegalArgumentException("The player was null, that is not valid.");
-		}
-		// make an empty list to handle any matches, i.e. any fields owned
-		// by player
-		ArrayList<Field> results = new ArrayList<>(); 
-		// iterate through fields arraylist to check if any fields are owned by the
-		// player
-		// if so add to results
-		for (Field aField : fields) {
-			if (aField.getownedBy() == (player)) {
-				results.add(aField);
-			}
-
-			if (results.isEmpty()) {
-				// the player is not in ownership of any field and hence cannot develop
-				// don't necessarily need to display this message, TEAM TO DISCUSS
-				System.out.println("You are not in ownership of any field and hence you cannot make a development.");
-			} else {
-				// the player is in ownership of one or more fields and has a development
-				// decision to make
-				System.out.println("You are in ownership of one or more fields.");
-				// results.get(0).getFieldName());
-				String playerResponse = sc.nextLine();
-
-				do {
-					System.out.println("Would you like to make a development?");
-					System.out.println("Select Y for yes or No for no, all other inputs are invalid");
-					if (playerResponse.toLowerCase().equals("y")) {
-						// the player wants to make a development
-						makeDevelopment(player, results);
-					} else if (playerResponse.toLowerCase().equals("n")) {
-						System.out.println("You have choosen not to make a development.");
-					}
-				} while (!playerResponse.toLowerCase().equals("y") || !playerResponse.toLowerCase().equals("n"));
-			}
-		}
-	}
-	
-	/**
-	 * this method determines which field a player wants to develop
-	 * 
-	 * @param player, an object of type player
-	 * @param fields, an arraylist of objects of type Field
-	 * @throws IllegalArgumentException if the player is null, or if the arraylist
-	 *                                  is null or empty
-	 */
-	public void makeDevelopment(Player player, ArrayList<Field> fields) throws IllegalArgumentException {
-		// some validation first
-		if (fields == null) {
-			throw new IllegalArgumentException("The list was null, that is invalid.");
-		} else if (fields.isEmpty()) {
-			throw new IllegalArgumentException("The list was empty, that is not valid.");
-		} else if (player == null) {
-			throw new IllegalArgumentException("The player was null, that is not valid.");
-		}
-		// first lets check if the player is in ownership of only one field
-		if (fields.size() == 1) {
-			// lets make sure the player can afford to develop an area in that field
-			if (fields.get(0).getareaBuyCost() > player.getResources()) {
-				System.out.println("You cannot afford to develop at this time.");
-			} else {
-				// the player owns only one field, lets store it in a var
-				selectWhichArea(fields.get(0), player);
-			}
-
-		} else {
-			System.out.println(
-					"You are the owner of more than one field. You must choose which one you wish to develop.");
-			// iterate through the fields within fields arraylist for the player
-			// so player can select a field to develop that they own
-			// using the index of the field object in the field arraylist plus one! as the
-			// number in the menu system
 			for (Field field : fields) {
-				System.out.printf("%d. %s%n", fields.indexOf(field) + 1,
-						field.getFieldName());
-			}
-			// establish size of list for validation
-			int highNumb = fields.size();
-			// boolean to check if input is valid
-			boolean isValidInput = false;
-			int playerResponse = 0; // Declare playerResponse outside the loop
-
-			do {
-				System.out.println(
-						"Please select which field you would like to develop by choosing a number from the menu above, all other responses are invalid.");
-				if (sc.hasNextInt()) {
-					playerResponse = sc.nextInt();
-					if (0 < playerResponse && playerResponse <= highNumb) {
-						isValidInput = true;
-					} else {
-						System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.",
-								highNumb);
+				if (field.getAreas().contains(fieldArea)) {
+					currentField = field.getFieldName();
+					numSquares = field.getAreas().size();
+					for (Area area : field.getAreas()) {
+						FieldArea fieldA = ((FieldArea) area);
+						if (fieldA.getOwnedBy().equals(player)) {
+							noOwned++;
+						} else {
+							if (!fieldA.getOwnedBy().getPlayerName().equalsIgnoreCase("Default")) {
+								otherOwners.add(fieldA.getOwnedBy().getPlayerName());
+								otherAreas.add(fieldA.getAreaName());
+							}
+						}
 					}
-				} else {
-					// Consume the non-integer token to clear the input buffer
-					sc.next();
-					System.out.println("Invalid input. Please enter a number.");
 				}
-			} while (!isValidInput);
-			// field px selected, store it in a var, dont forget to subtract one
-			Field fieldSelected = fields.get(playerResponse - 1);
+			}
 
-			// lets make sure the player can afford to develop an area in that field
-			if (fieldSelected.getareaBuyCost() > player.getResources()) {
-				System.out.println("You cannot afford to develop at this time.");
-			} else {
-				// the player owns only one field, lets store it in a var
-				selectWhichArea(fieldSelected, player);
+			if (fieldArea.isBelongsToField()) {
+				System.out.printf("%s, you have the opportunity to purchase %s (%s) for %d eco tokens...%n",
+						player.getPlayerName(), fieldArea.getAreaName(), currentField.toUpperCase(), costToBuy);
+				System.out.printf("There are %d squares in this Field.  You currently own %d of them.  %n", numSquares,
+						noOwned);
+				if (otherOwners.size() > 0) {
+					System.out.printf("Owner(s) of other squares in this Field:%n");
+					for (int i = 0; i < otherOwners.size(); i++) {
+						System.out.printf("%s: %s%n", otherOwners.get(i), otherAreas.get(i));
+					}
+					System.out.println();
+				}
 			}
 		}
 
-	}
+		// make sure the player can afford it
+		if (player.getResources() < costToBuy) {
+			System.out.println(
+					"But unfortunately you have insufficient resources at this time and cannot purchase this square.");
+			System.out.println("The square will be offered to the other players.");
 
-	/**
-	 * 
-	 * @param field,  an object of type field
-	 * @param player, an object of type player
-	 * @throws IllegalArgumentException if the either field or player is null
-	 */
-	public void selectWhichArea(Field field, Player player) throws IllegalArgumentException {
-		// some validation first
-		if (field == null || player == null) {
-			throw new IllegalArgumentException("Neither field not player can be null");
+			offerCounter++;
+			offerSquare(getNextPlayer(player), offerCounter, fieldArea);
 		}
-		System.out.printf("Congratulations you are in ownership of %s%n", field.getFieldName());
-		System.out.println("It contains the following areas:");
-		// iterate through the areas within the one field that the player owns and list
-		// them for the player
-		// using the index of the area object in the area arraylist plus one! as the
-		// number in the menu system
 
-		for (Area area : field.getAreas()) {
-			System.out.printf("%d. %s%n", field.getAreas().indexOf(area) + 1, area.getAreaName());
-		}
-		// establish size of list for validation
-		int highNumb = field.getAreas().size();
-		// boolean to check if input is valid
-		boolean isValidInput = false;
-		int playerResponse = 0; // Declare playerResponse outside the loop
+		System.out.printf("Would you like to purchase it? The cost is %d eco tokens. Type Y/ N.%n", costToBuy);
+		System.out.println("Y for yes, N will offer the opportunity to purchase to the other players.");
+
+		String playerResponse;
 
 		do {
-			System.out.println(
-					"Please select which area you would like to develop by choosing a number from the menu above, all other responses are invalid.");
-			if (sc.hasNextInt()) {
-				playerResponse = sc.nextInt();
-				if (0 < playerResponse && playerResponse <= highNumb) {
-					isValidInput = true;
-				} else {
-					System.out.printf("Invalid input. Please enter a number within the valid range, 1- %d%n.",
-							highNumb);
-				}
-			} else {
-				// Consume the non-integer token to clear the input buffer
-				sc.next();
-				System.out.println("Invalid input. Please enter a number.");
-			}
-		} while (!isValidInput);
-		// area px selected, store it in a var, dont forget to subtract one and call
-		// changeDevLevel method
-		Area areaSelected = field.getAreas().get(playerResponse - 1);
+			System.out.print("Enter your choice, only Y and N are valid inputs: ");
+			playerResponse = sc.next().trim().toLowerCase();
 
-		// Check if the areaSelected is an instance of FieldArea before casting
-		if (areaSelected instanceof FieldArea) {
-			// caste area to fieldArea in order to access its methods
-			FieldArea fieldAreaSelected = ((FieldArea) areaSelected);
-			// calculate the cost of development
-			float costToDev = (float) (fieldAreaSelected.getdevelopmentObj().getCostMultiplier() * field.getareaBuyCost());
-			// lets make sure the player can afford to develop an area in that field
-			if ((costToDev > player.getResources())) {
-				System.out.println("You cannot afford to develop at this time.");
+			switch (playerResponse) {
+			case "y":
+
+				// change the squares dev level, change the squares ownership
+				fieldArea.setOwnedBy(player);
+				changeDevLevel(player, fieldArea);
+				int neg = costToBuy * -1;
+				updatePlayerBalance(player, neg);
+				System.out.printf("%s has purchased %s!%n", player.getPlayerName(), fieldArea.getAreaName());
+				System.out.printf("%s now has %d eco tokens.%n", player.getPlayerName(), player.getResources());
+				System.out.println("Turn complete!");
+				break;
+			case "n":
+				offerCounter++;
+				offerSquare(getNextPlayer(player), offerCounter, fieldArea);
+				break;
+			default:
+				System.out.println("Invalid input. Please enter 'Y' or 'N'.");
+				break;
+			}
+		} while (!playerResponse.equals("y") && !playerResponse.equals("n"));
+
+	}
+
+	public boolean checkDevelopmentOption(Player player) throws IllegalArgumentException {
+
+		boolean canDev = false;
+
+		if (player == null) {
+			throw new IllegalArgumentException("The player was null, that is not valid.");
+		}
+
+		for (Field field : this.fields) {
+			if (field.getownedBy().equals(player)) {
+				canDev = true;
+				break;
 			} else {
-				changeDevLevel(fieldAreaSelected, null, costToDev);//this needs to be changed, probably better to have list as an instance avr of the game class
+				canDev = false;
+			}
+
+		}
+		return canDev;
+	}
+
+	private Field changeDevLevel(Player player, FieldArea fieldAreaToDev) {
+		int devLevel = fieldAreaToDev.getdevelopmentObj().getLevel();
+		Development devObj = this.getDevObjects().get(devLevel);
+
+		fieldAreaToDev.setdevelopmentObj(devObj);
+
+		ArrayList<FieldArea> fieldAreas = new ArrayList<>();
+		FieldArea fieldArea;
+		Field fieldBeingUpdated = null;
+
+		for (Field field : fields) {
+			if (field.getAreas().contains(fieldAreaToDev)) {
+				for (Area area : field.getAreas()) {
+					fieldBeingUpdated = field;
+					fieldArea = (FieldArea) area;
+					fieldAreas.add(fieldArea);
+				}
+
+			}
+		}
+
+		boolean doesFieldOwnershipNeedChanged = false;
+		for (FieldArea area : fieldAreas) {
+			if (!area.equals(fieldAreaToDev)) {
+				if (!area.getOwnedBy().equals(player)) {
+					doesFieldOwnershipNeedChanged = false;
+					break;
+				} else if (area.getOwnedBy().equals(player)) {
+					doesFieldOwnershipNeedChanged = true;
+				}
+
+			}
+		}
+
+		if (doesFieldOwnershipNeedChanged && !fieldBeingUpdated.getownedBy().equals(player)) {
+			fieldBeingUpdated.setownedBy(player);
+			System.out.printf("Field %s is now wholly owned by %s.  Congrats!%n",
+					fieldBeingUpdated.getFieldName().toUpperCase(), player.getPlayerName());
+
+		}
+		return fieldBeingUpdated;
+
+	}
+
+	public void updatePlayerBalance(Player player, int changeAmount) {
+		int newBalance = player.getResources() + changeAmount;
+		player.setResources(newBalance);
+		if (player.getResources()>=ENDGAME_VALUE) {
+			System.out.println();
+			System.out.printf("***** %s HAS OBTAINED %d ECO TOKENS AND WINS THE GAME!!", player.getPlayerName().toUpperCase(), ENDGAME_VALUE);
+			System.out.println("Displaying standings...");
+			System.out.println();
+			this.setGameOver(true);
+			calculateStandings();
+		}
+	}
+
+	public void payDonation(Player player, FieldArea fieldArea) {
+
+		Double costMultiplier = fieldArea.getdevelopmentObj().getCostMultiplier();
+		Integer donationCost = 0;
+
+		for (Field field : this.fields) {
+			if (field.getAreas().contains(fieldArea)) {
+
+				donationCost = field.getareaDonationCost();
+
+			}
+		}
+
+		Double multipliedCost = ((Integer) donationCost * costMultiplier);
+		int finalDonationCost;
+		finalDonationCost = multipliedCost.intValue();
+
+		// Get squareOwner
+		Player owner = fieldArea.getOwnedBy();
+		System.out.printf(
+				"Unfortunately for you, %s currently owns %s.  They convince you to make a donation for their cause...%n",
+				owner.getPlayerName(), fieldArea.getAreaName());
+		System.out.println();
+
+		int devLevel = fieldArea.getdevelopmentObj().getLevel();
+		if (devLevel > 2) {
+
+			switch (devLevel) {
+			case 3:
+				System.out.println(
+						"Help them create a Sustainability Educational Programme that aims to educate individuals of all ages.");
+				break;
+			case 4:
+				System.out.println(
+						"Help them build an Eco Learning Centre which will promote environmental knowledge and skills.");
+				break;
+			case 5:
+				System.out.println(
+						"Help them establish a Green Community Initiative to help empower communities and inspire positive change.");
+				break;
+			case 6:
+				System.out.println(
+						"Help them form a Global Climate Accord to address urgent challenges posed by climate change.");
+				break;
+			default:
+				System.out.println("Unrecognised Development Level");
+				break;
+			}
+
+		}
+
+		int donationNeg = finalDonationCost * -1;
+		updatePlayerBalance(player, donationNeg);
+		updatePlayerBalance(owner, finalDonationCost);
+		System.out.printf("Paying %d eco tokens...%n", finalDonationCost);
+		System.out.printf("Updated balance for %s: %d eco tokens.%n", player.getPlayerName(), player.getResources());
+		System.out.printf("Updated balance for %s: %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
+
+	}
+
+	// Method to update player's current square
+	// This method calculates the new position of the player after rolling the dice
+	// and updates their current square accordingly.
+	// It also checks if the player has passed or landed on the "GO Square" and
+	// triggers the passGo method if necessary.
+	/**
+	 * Updates the player's current square after rolling the dice.
+	 * 
+	 * @param player   the player whose square is being updated
+	 * @param diceRoll the total number rolled on the dice
+	 */
+	public void updatePlayerSquare(Player player, int diceRoll) {
+		int currentPlayerIndex = squareOrder.indexOf(player.getCurrentArea());
+		int newIndex = (currentPlayerIndex + diceRoll);
+
+		if (newIndex > squareOrder.size()) {
+			int newSquareIdx = (newIndex - squareOrder.size());
+			player.setCurrentArea(squareOrder.get(newSquareIdx));
+			updatePlayerBalance(player, GO_VALUE);
+			System.out.printf(
+					"%s has passed GO SQUARE and received %d additional funds! Updated amount: %d eco tokens%n",
+					player.getPlayerName(), GO_VALUE, player.getResources());
+			System.out.println();
+		} else if (newIndex < squareOrder.size()) {
+			player.setCurrentArea(squareOrder.get(newIndex));
+		}
+	}
+
+	// Method to handle quitting the game
+	public void quitGame(Player player) {
+
+		System.out.print("Are you sure you want to quit the game? (Y/N): ");
+		String confirmation = sc.next().trim().toUpperCase();
+
+		if (confirmation.equals("Y")) {
+			player.setResources(-1);
+			System.out.println(player.getPlayerName() + " has quit the game.");
+			calculateStandings();
+			this.setGameOver(true);
+		} else {
+			System.out.println("Returning to the game.");
+		}
+	}
+
+	private void calculateStandings() {
+		Collections.sort(players, new CompareByResources().reversed());
+
+		int tokens = players.get(0).getResources();
+		int count = 0;
+
+		for (Player player : players) {
+			if (player.getResources() == tokens) {
+				count++;
+			}
+		}
+
+		if (players.size()==2) {
+			
+			for (Player player : players) {
+				if (players.get(0).equals(player)) {
+					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player)+1,
+							player.getPlayerName(), player.getResources());
+					System.out.printf("CONGRATULATIONS %s, YOU ARE A TRUE ECO WARRIOR!%n",
+							player.getPlayerName().toUpperCase());
+					System.out.println();
+				} else {
+
+					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player)+1, player.getPlayerName(),
+							player.getResources());
+				}
+
+			}
+		}
+				
+				
+				
+		else if (count > 1) {
+			for (Player player : players) {
+				if (player.getResources() == tokens) {
+					System.out.printf("JOINT WINNER: " + "1. %s: %d eco tokens%n", player.getPlayerName(),
+							player.getResources());
+
+				}
+			}
+
+			System.out.printf("CONGRATULATIONS, YOU ARE TRUE ECO WARRIORS!%n");
+			System.out.println();
+
+			for (Player player : players) {
+				if (player.getResources() != tokens) {
+					if (count == 3) {
+						System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player) - 1,
+								player.getPlayerName(), player.getResources());
+					} else {
+						System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player), player.getPlayerName(),
+								player.getResources());
+					}
+				}
+
 			}
 		} else {
-			// Handle the case where the areaSelected is not a FieldArea
-			throw new IllegalArgumentException("Selected area is not a FieldArea.");
+
+			for (Player player : players) {
+				if (players.get(0).equals(player)) {
+					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player),
+							player.getPlayerName(), player.getResources());
+					System.out.printf("CONGRATULATIONS %s, YOU ARE A TRUE ECO WARRIOR!%n",
+							player.getPlayerName().toUpperCase());
+					System.out.println();
+				} else {
+
+					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player), player.getPlayerName(),
+							player.getResources());
+				}
+
+			}
 		}
+		System.out.println();
+		System.out.println("***** ~ WE HOPE YOU HAD FUN! THANKS FOR PLAYING! ~ *****");
+
 	}
-	
-	//note to discuss, I don't have access to developmentArryaL in order to use it to change the dev level. Should we declare it as an instance var in the game class?
-	//that might be the easiest thing to do, thats if I am going about changing the dev level in the correct way
-	//I have passed it as a parameter here but its not really working good
-	
+
 	/**
+	 * This method allow the player to take their turn By displaying the options
+	 * menu Then taking the players input and either quitting the game or rolling
+	 * the dice and updating player position
 	 * 
-	 * 
-	 * @param area, an object of type area
-	 * @param developmentsArrayL, an arraylist of development objects
-	 * @param costToDev, the cost to develop an area
-	 * @throws IllegalArgumentException if the the list is invalid, the object is null or the costToDev is not a positive number
-	 */
-	private void changeDevLevel(Area area, ArrayList<Development> developmentsArrayL, float costToDev) throws IllegalArgumentException{
-		// some validation first
-		if (developmentsArrayL == null) {
-			throw new IllegalArgumentException("The list was null, that is invalid.");
-		} else if (developmentsArrayL.isEmpty()) {
-			throw new IllegalArgumentException("The list was empty, that is not valid.");
-		} else if (area == null) {
-			throw new IllegalArgumentException("The area was null, that is not valid.");
-		}else if(!(area instanceof FieldArea)) {
-			throw new IllegalArgumentException("The area object is not of type fieldArea, you cannot develop.");
-		}else if(costToDev <= 0) {
-			throw new IllegalArgumentException("The cost to develop must be a positive number.");
-		}
-		// caste area to fieldArea in order to access its methods
-		FieldArea fieldArea = ((FieldArea) area);
-		// get the field areas development level
-		int fieldAreaDevLevel = fieldArea.getdevelopmentObj().getLevel();
-		// increase the player development level by one
-		fieldArea.setdevelopmentObj(developmentsArrayL.get(fieldAreaDevLevel + 1));
-		Player player = fieldArea.getOwnedBy();
-
-		// now the development level is updated lets amend the player balance
-		updatePlayerBalance(player, costToDev);
-	} 
-
-
-	/**
-	 * Updates the player's balance after making a development and transfers the payment to the owner's balance if applicable.
-	 * 
-	 * @param player    the player who made the development
-	 * @param owner     the owner of the area being developed
-	 * @param costToDev the cost of development
-	 */
-	public void updatePlayerBalance(Player player, float costToDev) {
-	    // Deduct cost from the player's resources
-	    float newBalance = player.getResources() - costToDev;
-	    player.setResources((int) newBalance);
-
-	}
-	
-	/**
-	 * Updates the owner's balance after receiving payment.
-	 * 
-	 * @param owner     the owner of the area being developed
-	 * @param costToDev the amount received
-	 */
-	public void updateOwnerBalance(Player owner, float costToDev) {
-	    // Add received amount to the owner's resources
-	    float newBalance = owner.getResources() + costToDev;
-	    owner.setResources((int) newBalance);
-	}
-	
-	public void handleAreaConsequences(Player player, Area area, ArrayList<Field> fields, ArrayList<Development> developments, float costToDev) {
-	    if (!(area instanceof FieldArea)) {
-	        // Handle the case where the area is not a FieldArea
-	        return;
-	    }
-	    
-	    FieldArea fieldArea = (FieldArea) area;
-	    Development dev = fieldArea.getdevelopmentObj();
-	    System.out.printf("%s, You have landed on %s! (%s)%n", player.getPlayerName(), area.getAreaName(), dev.getDescription());
-
-	 // Check if the area is owned by the player
-	    Player owner = fieldArea.getOwnedBy();
-	    float costMultiplier = 1.00f; // Default cost multiplier
-
-	    // Get the development level, description, and cost multiplier from the developments ArrayList
-	    for (Development development : developments) {
-	        if (development.getLevel() == dev.getLevel()) {
-	            costMultiplier = (float) development.getCostMultiplier();
-	            break;
-	        }
-	    }
-
-
-	    switch (dev.getLevel()) {
-	        case 1:
-	            System.out.println("Unowned Square - Square is currently available!");
-	            fieldArea.setOwnedBy(player, dev); // Assign the area to the player
-	            updatePlayerBalance(player, costToDev); // Update player's balance
-	            System.out.printf("Action taken! Your eco token balance was %d eco tokens.%n", player.getResources());
-	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources() - (int)costToDev);
-	            System.out.printf("%s is now in charge of %s.%n", player.getPlayerName(), area.getAreaName());
-	            break;
-	        case 2:
-	            System.out.println("Development: Level 2 – “Owned Square” – “Square already owned by player”");
-	            if (owner != null && !owner.equals(player)) {
-	                System.out.printf("Unfortunately for you, %s is in charge of this area.%n", owner.getPlayerName());
-	                System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
-	                System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
-	                updatePlayerBalance(player, costToDev); // Update player's balance
-	                System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
-	                // Update owner's balance
-	                updateOwnerBalance(owner, costToDev); // Update owner's balance
-	                System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
-	            }
-	            break;
-	        case 3:
-	            System.out.printf("Please help %s create a Sustainability Educational Programme that aims to educate individuals of all ages.%n", owner.getPlayerName());
-	            System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
-	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
-	            updatePlayerBalance(player, costToDev); // Update player's balance
-	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
-	            // Update owner's balance
-	            updateOwnerBalance(owner, costToDev); // Update owner's balance
-	            System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
-	            break;
-	        case 4:
-	            System.out.printf("Please help %s build an Eco Learning Centre which will promote environmental knowledge and skills.%n", owner.getPlayerName());
-	            System.out.printf("Please pay %.2f eco tokens to %s.%n", costToDev, owner.getPlayerName());
-	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
-	            updatePlayerBalance(player, costToDev); // Update player's balance
-	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
-	            // Update owner's balance
-	            updateOwnerBalance(owner, costToDev); // Update owner's balance
-	            System.out.printf("%s's new balance is %d eco tokens.%n", owner.getPlayerName(), owner.getResources());
-	            break;
-	        case 5:
-	            System.out.printf("Please help %s establish a Green Community Initiative to help empower communities and inspire positive change.%n", owner.getPlayerName());
-	            System.out.printf("Please pay %.2f eco tokens.%n", costToDev);
-	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
-	            updatePlayerBalance(player, costToDev); // Update player's balance
-	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
-	            break;
-	        case 6:
-	            System.out.printf("Please help %s form a Global Climate Accord to address urgent challenges posed by climate change.%n", owner.getPlayerName());
-	            System.out.printf("Please pay %.2f eco tokens.%n", costToDev);
-	            System.out.printf("Your old balance was %d eco tokens.%n", player.getResources());
-	            updatePlayerBalance(player, costToDev); // Update player's balance
-	            System.out.printf("Your new balance is %d eco tokens.%n", player.getResources());
-	            break;
-	        default:
-	            System.out.println("Unrecognised development level");
-	            break;
-	    }
-	}
-
-
-	
-	// Method to check if a player owns the entire field
-	/**
-     * Checks if a player owns the entire field.
-     * 
-     * @param player the player to check ownership for
-     * @return true if the player owns all areas within any field, false otherwise
-     */
-	/**
-	 * Checks if a player owns the entire field.
-	 * 
-	 * @param player the player to check ownership for
-	 * @return true if the player owns all areas within any field, false otherwise
-	 */
-	public boolean playerOwnsEntireField(Player player) {
-	    for (Field field : fields) {
-	        boolean ownsField = field.getownedBy() == player; // Check if the field is owned by the player
-	        if (ownsField) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
-
-
-
-
-    
- // Method to update player's current square
-    //This method calculates the new position of the player after rolling the dice and updates their current square accordingly.
-    //It also checks if the player has passed or landed on the "GO Square" and triggers the passGo method if necessary.
-	/**
-     * Updates the player's current square after rolling the dice.
-     * 
-     * @param player    the player whose square is being updated
-     * @param diceRoll  the total number rolled on the dice
-     */
-    public void updatePlayerCurrentSquare(Player player, int diceRoll) {
-        int currentPlayerIndex = squareOrder.indexOf(player.getCurrentArea());
-        int newIndex = (currentPlayerIndex + diceRoll) % squareOrder.size();
-        if (newIndex < 0) {
-            newIndex += squareOrder.size();
-        }
-        player.setCurrentArea(squareOrder.get(newIndex));
-
-        if (diceRoll > 12) {
-            System.out.println(player.getPlayerName() + " passed GO SQUARE and received additional funds!");
-        } else if (squareOrder.get(newIndex) instanceof SpecialArea
-                && ((SpecialArea) squareOrder.get(newIndex)).getAreaName().equalsIgnoreCase("goSquare")) {
-            System.out.println(player.getPlayerName() + " landed on GO SQUARE and received additional funds!");
-        }
-    }
-
-
-    
-    // Method to handle quitting the game
-    public void handleGameQuit(Player player) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Are you sure you want to quit the game? (Y/N): ");
-        String confirmation = scanner.nextLine().trim().toUpperCase();
-
-        if (confirmation.equals("Y")) {
-            players.remove(player);
-            System.out.println(player.getPlayerName() + " has quit the game.");
-
-            if (players.isEmpty()) {
-                System.out.println("No more players left in the game. Exiting...");
-                System.exit(0); // Exit the program if no players are left
-            }
-        } else {
-            System.out.println("Returning to the game.");
-        }
-        scanner.close();
-    }
-    
-
-	// Method to start the game
-    public void startGame() {
-        // Loop through players and handle their turns until the game ends
-        for (Player player : players) {
-            handleTurn(player);
-            if (isGameOver()) {
-                break;
-            }
-        }
-    }
-
-
-
-	private boolean isGameOver() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	/**
-	 * This method allow the player to take their turn
-	 * By displaying the options menu
-	 * Then taking the players input and either quitting the game or rolling the dice 
-	 * and updating player position
 	 * @param player, an object of type player
 	 * @throws IllegalArgumentException if the player is null
 	 */
-	public void takeTurnMenu(Player player)throws IllegalArgumentException {
-		if(player == null) {
+	public void takeTurn(Player player) throws IllegalArgumentException {
+		if (player == null) {
 			throw new IllegalArgumentException("Player is null, that is invalid.");
 		}
-	    // Display options
-	    System.out.printf("It's %s's turn!%n", player.getPlayerName());
-	    System.out.println("Choose an option:");
-	    System.out.println(" 1. Roll dice");
-	    System.out.println(" 2. Quit Game");
+		// Display options
+		System.out.printf("%s, please choose an option:%n", player.getPlayerName());
+		System.out.println(" 1. Roll dice");
+		System.out.println(" 2. Quit Game");
 
-	    // Take user input
-	    String input;
-	    do {
-	        System.out.print("Enter your choice (1 or 2): ");
-	        input = sc.nextLine(); 
-	        if (!input.equals("1") && !input.equals("2")) {
-	            System.out.println("Invalid input. Please enter 1 or 2.");
-	        }
-	    } while (!input.equals("1") && !input.equals("2"));
+		// Take user input
+		String input;
+		do {
+			System.out.print("Enter your choice (1 or 2): ");
+			System.out.println();
+			input = sc.next();
+			if ((!input.equals("1")) && (!input.equals("2"))) {
+				System.out.println("Invalid input.");
+				sc.next();
+			}
+		} while ((!input.equals("1")) && (!input.equals("2")));
 
-	    // Process user input
-	    switch (input) {
-	        case "1":
-	            System.out.println("Rolling dice...");
-	            int diceRoll = rollDice();
-	            updatePlayerCurrentSquare(player, diceRoll);
-	            break;
-	        case "2":
-	            System.out.println("Quitting game...");
-	            handleGameQuit(player);
-	            break;
-	        default:
-	            System.out.println("Please enter a valid option");
-	            break;
-	    }
-	}
-
-
-
-	/**
-	 * Handles a player's input when entered during their turn (at the start)
-	 * 
-	 * @param input
-	 */
- // Method to handle user input during turn
-    public void handleUserInput(Player player, String input) {
-        switch (input) {
-            case "1":
-                System.out.println("Rolling dice...");
-                int diceRoll = rollDice();
-                updatePlayerCurrentSquare(player, diceRoll);
-                break;
-            case "2":
-                System.out.println("Quitting game...");
-                handleGameQuit(player);
-                
-                break;
-            default:
-                System.out.println("Please enter a valid option");
-                break;
-        }
-    }
-	/**
-	 * Displays the options a player has available to them (at the start of turn)
-	 * 
-	 * @return options
-	 */
-	public String showOptions() {
-
-		String options = "Choose an option:" + "\n 1) Roll dice" + "\n 2) Buy Development" + "\n 3) Quit Game";
-		return options;
+		// Process user input
+		switch (input) {
+		case "1":
+			System.out.println("Rolling dice...");
+			int diceRoll = rollDice();
+			updatePlayerSquare(player, diceRoll);
+			handleActions(player);
+			break;
+		case "2":
+			System.out.println("You have selected to quit game...");
+			System.out.println(
+					"**** PLEASE NOTE:  if you do quit, you instantly forfeit your eco tokens and automatically lose the game! ****");
+			System.out.println();
+			quitGame(player);
+			break;
+		default:
+			System.out.println("Please enter a valid option");
+			break;
+		}
 	}
 
 	/**
@@ -841,14 +901,24 @@ public class Game {
 	 * @throws IllegalArgumentException if the maximum number of players has already
 	 *                                  been reached
 	 */
-	public static ArrayList<Player> registerPlayers(Area goSquare) {
+	public void registerPlayers(Area goSquare) {
 		Scanner sc = new Scanner(System.in);
 		ArrayList<Player> players = new ArrayList<>();
 
 		String playerName;
 		int noPlayers;
 
-		System.out.println("Please enter number of players");
+		System.out.println("***** WELCOME TO CLIMATE CHANGE CRISIS *****");
+		System.out.println();
+		System.out.println(
+				"Climate change is wreaking havoc across the globe with increasing extreme weather, biodiversity loss, rising seas, and much more.");
+		System.out.println(
+				"With each roll of the dice, you'll face critical decisions and strategic choices, from protecting endangered species to supporting reforestation efforts.");
+		System.out.println(
+				"Invest your eco tokens wisely, convincing your fellow players to donate to eco-friendly causes.");
+		System.out.println("Will you rise to the challenge and become a champion of sustainability?");
+		System.out.println();
+		System.out.println("Please enter number of players:");
 		noPlayers = sc.nextInt();
 
 		while ((noPlayers < MIN_PLAYER_NUMBER) || (noPlayers > MAX_PLAYER_NUMBER)) {
@@ -856,9 +926,9 @@ public class Game {
 					MAX_PLAYER_NUMBER);
 			System.out.println("Please enter number of players");
 			noPlayers = sc.nextInt();
-			sc.nextInt();
 		}
 
+		// ensuring we get the number of players playing
 		while (players.size() < noPlayers) {
 			if (players.size() == 0) {
 				System.out.println("Please enter first player name:");
@@ -866,83 +936,105 @@ public class Game {
 				System.out.println("Please enter next player name:");
 			}
 
-			playerName = sc.nextLine().trim();
-			for (Player player : players) {
-				if (player.getPlayerName().equals(playerName)) {
-					System.out.println("Player name already exists, please choose a different name.");
-					sc.nextLine();
-					continue;
-				} else {
-					Player newPlayer = new Player(playerName, goSquare);
-					players.add(newPlayer);
-					System.out.printf("%s has been successfully registered as a player!%n", newPlayer.getPlayerName());
-					sc.nextLine();
-				}
+			playerName = sc.next();
+			Player player = new Player(playerName, goSquare);
 
-				System.out.printf(
-						"All %d players have been successfully registered!  Welcome to Climate Change Crisis...%n",
-						players.size());
+			while (players.contains(player)) {
+				System.out.println("Player name already exists, please choose a different name.");
+				player.setPlayerName(sc.next().trim());
 			}
-
+			players.add(player);
+			System.out.println();
+			System.out.printf("%s has been successfully registered as a player!%n", player.getPlayerName());
+			System.out.println();
 		}
+
+		System.out.println("------------------------------------------------------------");
+		System.out.printf("All %d players have been successfully registered!  Now starting game...%n", players.size());
+		System.out.println();
 		Collections.shuffle(players);
+
 		System.out.println("Player order for this game:");
+
 		for (Player player : players) {
-			System.out.printf("Player %d: %s%n", players.indexOf(player), player.getPlayerName());
+			System.out.printf("Player %d: %s%n", players.indexOf(player) + 1, player.getPlayerName());
 		}
 
-		return players;
+		System.out.printf("All players start with %d eco tokens.  Good luck!%n", players.get(0).getResources());
+		System.out.println();
 
+		this.setPlayers(players);
 	}
+
+	// OBJECT CREATION METHODS
 
 	private static ArrayList<Development> createDevelopments() {
 		ArrayList<Development> developments = new ArrayList<>();
-		developments.add(new Development(1, "Unowned Square", "Square is currently available!", 1.00));
-		developments.add(new Development(2, "Owned Square", "Square already owned by player", 1.20));
-		developments
-				.add(new Development(3, "Minor Development 1", "Create a Sustainability Educational Programme", 1.40));
-		developments.add(new Development(4, "Minor Development 2", "Build an Eco Learning Centre", 1.60));
-		developments
-				.add(new Development(5, "Minor Development 3", "Establish a Green Community Action Initiative", 1.80));
-		developments.add(new Development(6, "Major Development", "Form a Global Climate Accord", 3.00));
+		developments.add(new Development(1, "an unowned Square", "Square is currently available!", 1.00));
+		developments.add(new Development(2, "an owned Square", "Square already owned by player", 2.00));
+		developments.add(new Development(3, "a Sustainability Educational Programme",
+				"Create a Sustainability Educational Programme!", 3.00));
+		developments.add(new Development(4, "an Eco Learning Centre", "Build an Eco Learning Centre!", 4.00));
+		developments.add(new Development(5, "a Green Community Action Initiative",
+				"Establish a Green Community Action Initiative!", 5.00));
+		developments.add(new Development(6, "a Global Climate Accord", "Form a Global Climate Accord!", 8.00));
 
 		return developments;
 
 	}
 
-	private static ArrayList<Area> createWFFieldAreas(Development devObj) {
+	private static ArrayList<Area> createWFFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Wellspring Woe", devObj));
-		fieldAreas.add(new FieldArea("Parched Pastures", devObj));
-		fieldAreas.add(new FieldArea("Harvest Havoc", devObj));
+		fieldAreas.add(new FieldArea("Wellspring Woe", devObj,
+				"The once gushing wells and springs have dried up; please support locals by investing in clean water technologies!",
+				player));
+		fieldAreas.add(new FieldArea("Parched Pastures", devObj,
+				"Dry earth stretches as far as the eye can see; invest in irrigation systems to revive the local landscape!",
+				player));
+		fieldAreas.add(new FieldArea("Harvest Havoc", devObj,
+				"A devastating drought has withered crops; help farmers invest in drought-resistant farming techniques!",
+				player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createBLFieldAreas(Development devObj) {
+	private static ArrayList<Area> createBLFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Intruder Infestation", devObj));
-		fieldAreas.add(new FieldArea("Deforestation Disaster", devObj));
-		fieldAreas.add(new FieldArea("Silent Species", devObj));
+		fieldAreas.add(new FieldArea("Intruder Infestation", devObj,
+				"Pesky fire ants are causing chaos to the habitat. Invest in pest control plans to restore the ecosystem!",
+				player));
+		fieldAreas.add(new FieldArea("Deforestation Disaster", devObj,
+				"The once towering trees are now reduced to barren, exposed stumps. Revive reforestation efforts by planting trees!",
+				player));
+		fieldAreas.add(new FieldArea("Silent Species", devObj,
+				"You find yourself in a once vibrant ecosystem that has fallen silent.  Establish a new state-of-the-art breeding centre!",
+				player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createRSFieldAreas(Development devObj) {
+	private static ArrayList<Area> createRSFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Seashore Sorrow", devObj));
-		fieldAreas.add(new FieldArea("Coastal Catastrophe", devObj));
+		fieldAreas.add(new FieldArea("Seashore Sorrow", devObj,
+				"Encroaching waves reveal the toll of rising sea levels. Protect the coast by building sea walls and restoring sand dunes!",
+				player));
+		fieldAreas.add(new FieldArea("Coastal Catastrophe", devObj,
+				"An oil tanker rupture has unleashed a deluge of crude oil. Invest in oil booms to help contain the spread of the oil!",
+				player));
 
 		return fieldAreas;
 
 	}
 
-	private static ArrayList<Area> createEWFieldAreas(Development devObj) {
+	private static ArrayList<Area> createEWFieldAreas(Development devObj, Player player) {
 		ArrayList<Area> fieldAreas = new ArrayList<>();
-		fieldAreas.add(new FieldArea("Hurricane Hit", devObj));
-		fieldAreas.add(new FieldArea("Wicked Wildfire", devObj));
+		fieldAreas.add(new FieldArea("Hurricane Hit", devObj,
+				"Brace yourself as a powerful hurricane is on its way! Help build a sturdy shelter!", player));
+		fieldAreas.add(new FieldArea("Wicked Wildfire", devObj,
+				"A blazing fire has swept its way through the forest once more. Fund emergency helicopters to help put out the fire!",
+				player));
 
 		return fieldAreas;
 

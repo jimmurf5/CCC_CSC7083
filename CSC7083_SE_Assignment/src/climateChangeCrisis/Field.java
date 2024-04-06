@@ -27,12 +27,12 @@ public class Field {
 	 * @param areas
 	 * @param areaCost
 	 */
-	public Field(String fieldName, ArrayList<Area> areas, int areaBuyCost, int areaDonationCost) {
+	public Field(String fieldName, ArrayList<Area> areas, int areaBuyCost, int areaDonationCost, Player player) {
 		this.setFieldName(fieldName);
 		this.setAreas(areas);
 		this.setareaBuyCost(areaBuyCost);
 		this.setareaDonationCost(areaDonationCost);
-		this.setownedBy(null);
+		this.setownedBy(player);;
 	}
 
 	// Getters & Setters
@@ -128,13 +128,6 @@ public class Field {
 	 *                                  argument passed in is null
 	 */
 	public void setownedBy(Player ownedBy) throws IllegalArgumentException {
-		if (this.ownedBy != null) {
-			throw new IllegalArgumentException("Field is already owned by another Player");
-		}
-
-		if (ownedBy == null) {
-			throw new IllegalArgumentException("Cannot change Field ownership to null");
-		}
 
 		this.ownedBy = ownedBy;
 	}
