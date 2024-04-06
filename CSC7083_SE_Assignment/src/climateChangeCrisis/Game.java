@@ -17,7 +17,7 @@ public class Game {
 	private static final int MIN_PLAYER_NUMBER = 2;
 	private static final int MAX_PLAYER_NUMBER = 4;
 	private static final int GO_VALUE = 5;
-	private static final int ENDGAME_VALUE=600;
+	private static final int ENDGAME_VALUE = 200;
 
 	// Instance vars
 
@@ -242,6 +242,7 @@ public class Game {
 		ArrayList<Integer> totalCostsAvailForDev = new ArrayList<>();
 
 		for (Field field : this.fields) {
+
 			// check if field is owned by player- all areas should be level 2 and above
 			if (field.getownedBy().equals(player)) {
 
@@ -264,12 +265,12 @@ public class Game {
 					totalCost.add((areaCosts.get(idx)) * (devMultiplier.get(idx)));
 				}
 
-				System.out.println("FIELDAREASFORDEV SIZE IS:" + fieldAreasForDev.size());
+				//System.out.println("FIELDAREASFORDEV SIZE IS:" + fieldAreasForDev.size());
 
 				for (int i = 0; i < fieldAreasForDev.size(); i++) {
 
 					// ignore fieldareas development level 6 and fieldareas not affordable by player
-					if ((totalCost.get(i) < player.getResources()) || (!(devLevels.get(i) == 6))) {
+					if ((totalCost.get(i) < player.getResources()) && (!(devLevels.get(i).intValue() == 6))) {
 						// adding to final curated lists
 						FieldArea fieldA = ((FieldArea) fieldAreasForDev.get(i));
 						fieldAreasAvailForDev.add(fieldA);
@@ -282,22 +283,27 @@ public class Game {
 
 			}
 
+			areasForDev.clear();
+			fieldAreasForDev.clear();
+			areaCosts.clear();
+			devMultiplier.clear();
+			devObjs.clear();
+			totalCost.clear();
 		}
 
-		System.out.println("FIELDAREASAVAILABLEFORDEV(FINAL CURATED LIST) SIZE IS:" + fieldAreasForDev.size());
-		System.out.println("TOTALCOSTSAVAILABLEFORDEV SIZE IS:" + totalCostsAvailForDev.size());
-		System.out.println("FINALDEVOBJS SIZE IS:" + FinalDevObjs.size());
+		//System.out.println("FIELDAREASAVAILABLEFORDEV(FINAL CURATED LIST) SIZE IS:" + fieldAreasAvailForDev.size());
+		//System.out.println("TOTALCOSTSAVAILABLEFORDEV SIZE IS:" + totalCostsAvailForDev.size());
+		//System.out.println("FINALDEVOBJS SIZE IS:" + FinalDevObjs.size());
 
-		int index=0;
-		if(fieldAreasAvailForDev.isEmpty()) {
-			
-			index= -1;
-		}else {
+		int index = 0;
+		if (fieldAreasAvailForDev.isEmpty()) {
+
+			index = -1;
+		} else {
 			// get finalchoice of fieldarea from user
 			index = offerDevelopment(fieldAreasAvailForDev, totalCostsAvailForDev, FinalDevObjs);
-			
+
 		}
-		
 
 		// if change their mind return null
 		if (index == -1) {
@@ -313,15 +319,15 @@ public class Game {
 			ArrayList<Development> devObjs) {
 		System.out.println("Areas available for Development: ");
 		for (int i = 0; i < fieldAreas.size(); i++) {
-			System.out.printf("%s. Area: %s, Cost: %d%n", (i + 1), fieldAreas.get(i).getAreaName(), devCosts.get(i));
-
 			int nextDevObjIdx = fieldAreas.get(i).getdevelopmentObj().getLevel();
-			System.out.printf("Development option: %s%n", this.devObjects.get(nextDevObjIdx).getDescription());
+			System.out.printf("%d. %s, %d eco tokens - %s %n", (i + 1), fieldAreas.get(i).getAreaName(),
+					devCosts.get(i), this.devObjects.get(nextDevObjIdx).getDescription());
+
 		}
 		System.out.println(
-				"Please choose which Area you wish to Develop: (enter corresponding number or 'N' to change your mind)");
+				"Please choose which Area you wish to Develop: (enter corresponding number or 'N' if you do not wish to develop)");
 		String option = sc.next().toUpperCase().trim();
-		
+
 		if (option.equals("N")) {
 			System.out.println("Player has chosen not to Develop");
 			return -1;
@@ -650,9 +656,10 @@ public class Game {
 	public void updatePlayerBalance(Player player, int changeAmount) {
 		int newBalance = player.getResources() + changeAmount;
 		player.setResources(newBalance);
-		if (player.getResources()>=ENDGAME_VALUE) {
+		if (player.getResources() >= ENDGAME_VALUE) {
 			System.out.println();
-			System.out.printf("***** %s HAS OBTAINED %d ECO TOKENS AND WINS THE GAME!!", player.getPlayerName().toUpperCase(), ENDGAME_VALUE);
+			System.out.printf("***** %s HAS OBTAINED %d ECO TOKENS AND WINS THE GAME!!",
+					player.getPlayerName().toUpperCase(), ENDGAME_VALUE);
 			System.out.println("Displaying standings...");
 			System.out.println();
 			this.setGameOver(true);
@@ -765,10 +772,12 @@ public class Game {
 	}
 
 	private void calculateStandings() {
+		
+		//sort by most to least eco tokens
 		Collections.sort(players, new CompareByResources().reversed());
 
 		int tokens = players.get(0).getResources();
-		int count = 0;
+		int count = 0; //see if any other players have same tokens count as 1st place
 
 		for (Player player : players) {
 			if (player.getResources() == tokens) {
@@ -776,29 +785,32 @@ public class Game {
 			}
 		}
 
-		if (players.size()==2) {
-			
+		//for 2 players
+		if (players.size() == 2) {
+
 			for (Player player : players) {
 				if (players.get(0).equals(player)) {
-					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player)+1,
+					System.out.println();
+					System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player) + 1,
 							player.getPlayerName(), player.getResources());
 					System.out.printf("CONGRATULATIONS %s, YOU ARE A TRUE ECO WARRIOR!%n",
 							player.getPlayerName().toUpperCase());
 					System.out.println();
 				} else {
 
-					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player)+1, player.getPlayerName(),
+					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player) + 1, player.getPlayerName(),
 							player.getResources());
 				}
 
 			}
 		}
-				
-				
-				
+		//joint winners
 		else if (count > 1) {
 			for (Player player : players) {
 				if (player.getResources() == tokens) {
+					System.out.println();
+					System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
 					System.out.printf("JOINT WINNER: " + "1. %s: %d eco tokens%n", player.getPlayerName(),
 							player.getResources());
 
@@ -822,16 +834,19 @@ public class Game {
 			}
 		} else {
 
+			//4 players, no joint winners
 			for (Player player : players) {
 				if (players.get(0).equals(player)) {
-					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player),
+					System.out.println();
+					System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+					System.out.printf("WINNER: " + "%d. %s: %d eco tokens%n", players.indexOf(player)+1,
 							player.getPlayerName(), player.getResources());
 					System.out.printf("CONGRATULATIONS %s, YOU ARE A TRUE ECO WARRIOR!%n",
 							player.getPlayerName().toUpperCase());
 					System.out.println();
 				} else {
 
-					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player), player.getPlayerName(),
+					System.out.printf("%d. %s: %d eco tokens%n", players.indexOf(player)+1, player.getPlayerName(),
 							player.getResources());
 				}
 

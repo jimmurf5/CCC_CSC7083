@@ -20,7 +20,7 @@ public class Player {
 
 	
 	//setting constant for initial resources given to player 
-	private static final int INITIAL_RESOURCES = 200;
+	private static final int INITIAL_RESOURCES = 100;
 	
 	
 	//declare private instance vars
