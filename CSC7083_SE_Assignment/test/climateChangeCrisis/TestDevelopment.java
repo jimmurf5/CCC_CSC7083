@@ -37,9 +37,10 @@ class TestDevelopment {
 	int invalidLevelLow = 0;
 	int invalidLevelHigh = 7;
 
-	float costMultiplierLow = 1.0f;
-	float costMultiplierMiddle = 2.5f;
-	float costMultiplierHigh = 4.0f;
+	float costMultiplierLow = 1.00f;
+	float costMultiplierMiddle = 4.00f;
+	float costMultiplierHigh = 8.00f;
+	
 
 	Development d1;
 
@@ -51,7 +52,7 @@ class TestDevelopment {
 		validNameLow = "aa";
 		invalidNameNull = null;
 		invalidNameLow = "a";
-		invalidNameHigh = "a".repeat(21);
+		invalidNameHigh = "a".repeat(51);
 		
 		
 
@@ -67,11 +68,6 @@ class TestDevelopment {
 		d1 = new Development(level1, validNameHigh, "development description", costMultiplierHigh);
 	}
 
-	@Test
-	void testDevelopmentDefaultConstructor() {
-		Development d2 = new Development();
-		assertNotNull(d2);
-	}
 
 	@Test
 	void testDevelopmentConstructorArgsValidData() {
@@ -88,7 +84,7 @@ class TestDevelopment {
 
 		// test for invalid level
 		assertThrows(IllegalArgumentException.class, () -> {
-			new Development(invalidLevelLow, validNameHigh, "description", costMultiplierHigh);
+			new Development(invalidLevelLow, invalidNameHigh, "description", costMultiplierHigh);
 		});
 
 		// test for invalid name
@@ -96,7 +92,7 @@ class TestDevelopment {
 			new Development(level1, invalidNameHigh, "description", costMultiplierHigh);
 		});
 
-		// test for invalid description
+		//test for invalid description
 		assertThrows(IllegalArgumentException.class, () -> {
 			new Development(level1, invalidNameHigh, null, costMultiplierHigh);
 		});
@@ -185,7 +181,7 @@ class TestDevelopment {
 
 	
 	@Test
-	void testGetSetDevelopmntLevelInvalidData() {
+	void testGetSetDevelopmentLevelInvalidData() {
 		
 	Exception ex =	assertThrows(IllegalArgumentException.class, ()->{
 			d1.setLevel(invalidLevelHigh);

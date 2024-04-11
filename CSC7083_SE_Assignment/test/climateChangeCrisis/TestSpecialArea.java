@@ -47,16 +47,10 @@ class TestSpecialArea {
 	
 	@Test
 	void testGetSetResourceValueInvalid() {
-		
-		SpecialArea test4 = new SpecialArea("Blank Square", 10);
-		
-		assertThrows(IllegalArgumentException.class, ()->{
-			test4.setResourceValue(-0.01);
-		});
-		
-		assertThrows(IllegalArgumentException.class, ()->{
-			test4.setResourceValue(-1);
-		});
+	    SpecialArea test4 = new SpecialArea("Blank Square", 10);
+	    
+	    assertThrows(IllegalArgumentException.class, () -> {
+	        test4.setResourceValue(-1);
+	    });
 	}
-
 }

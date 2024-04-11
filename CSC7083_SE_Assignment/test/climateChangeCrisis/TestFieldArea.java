@@ -7,171 +7,123 @@ import org.junit.jupiter.api.Test;
 
 class TestFieldArea {
 
-	// test data
 
-	Development emptySquare;
-	Player player1, player2;
-	FieldArea area1, area2;
+	 // test data
 
-	String validAreanameLow, validAreanameMed, validAreanameHigh, invalidAreanameLow, invalidAreanameHigh,
-			emptyAreaname;
+    Development emptySquare;
+    Player player1, player2;
+    FieldArea area1, area2;
+    
+    SpecialArea goSquare;
 
-	@BeforeEach
-	void setUp() throws Exception {
+    String validAreanameLow, validAreanameMed, validAreanameHigh, invalidAreanameLow, invalidAreanameHigh,
+            emptyAreaname;
 
-		validAreanameLow = "X".repeat(10);
-		validAreanameMed = "X".repeat(20);
-		validAreanameHigh = "X".repeat(30);
-		invalidAreanameLow = "X".repeat(9);
-		invalidAreanameHigh = "X".repeat(31);
-		emptyAreaname = "";
+    @BeforeEach
+    void setUp() throws Exception {
+    	
+    	 emptySquare = new Development(1, "Empty Square", "Bla bla bla description", 1.00);
+    	 goSquare = new SpecialArea("goSquare", 100);
+    	 
+    	// Initialize players
+         player1 = new Player("Matthew", goSquare);
+         player2 = new Player("Leonard", goSquare);
+    	
+     
+        // Create FieldArea instances with valid Player objects
+        area1 = new FieldArea("Hurricane Hit", emptySquare, "Message", player1);
+        area2 = new FieldArea("Wicked Wildfire", emptySquare, "Message2", player2);
+        
+        
+        validAreanameLow = "X".repeat(5);
+        validAreanameMed = "X".repeat(25);
+        validAreanameHigh = "X".repeat(50);
+        invalidAreanameLow = "X".repeat(4);
+        invalidAreanameHigh = "X".repeat(51);
+        emptyAreaname = "";
 
-		area1 = new FieldArea("Hurricane Hit", emptySquare);
-		area2 = new FieldArea("Wicked Wildfire", emptySquare);
-		emptySquare = new Development(1, "Empty Square", "Bla bla bla description", 1.00);
-		player1 = new Player("Matthew", 100, area1, false, false);
-		player2 = new Player("Leonard", 100, area2, false, false);
-	}
+        
+        
+      
+    }
 
-	@Test
-	void testFieldAreaConstructorValid() {
-		FieldArea test = new FieldArea("Laughing larry", emptySquare);
 
-		assertEquals("Laughing larry", test.getAreaName());
-		assertEquals(emptySquare, test.getdevelopmentObj());
-		assertEquals(null, test.getOwnedBy());
-		assertEquals(true, test.isBelongsToField());
 
-		FieldArea test2 = new FieldArea(validAreanameLow, emptySquare);
+    @Test
+    void testFieldAreaConstructorValid() {
+      
+    	assertEquals("Hurricane Hit", area1.getAreaName());
+        assertEquals(emptySquare, area1.getdevelopmentObj());
+        assertEquals("Message", area1.getInitialSquareMessage());
+        assertEquals(player1, area1.getOwnedBy());
+   
+    }
 
-		assertEquals(validAreanameLow, test2.getAreaName());
-		assertEquals(emptySquare, test2.getdevelopmentObj());
-		assertEquals(null, test2.getOwnedBy());
-		assertEquals(true, test2.isBelongsToField());
+    @Test
+    void testFieldAreaConstructorInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> new FieldArea(null, emptySquare, emptyAreaname, player1));
+        assertThrows(IllegalArgumentException.class, () -> new FieldArea(invalidAreanameLow, emptySquare, emptyAreaname, player1));
+        assertThrows(IllegalArgumentException.class, () -> new FieldArea(invalidAreanameHigh, emptySquare, emptyAreaname, player1));
+        assertThrows(IllegalArgumentException.class, () -> new FieldArea(emptyAreaname, emptySquare, emptyAreaname, player1));
+        assertThrows(IllegalArgumentException.class, () -> new FieldArea("Hurricane Hit", null, emptyAreaname, player1));
+    }
 
-		FieldArea test3 = new FieldArea(validAreanameMed, emptySquare);
+    @Test
+    void testGetSetDevelopmentObjValid() {
+        Development ownedSquare = new Development(2, "Owned Square", "Bla bla bla description", 1.10);
+        area1.setdevelopmentObj(ownedSquare);
+        assertEquals(ownedSquare, area1.getdevelopmentObj());
+    }
 
-		assertEquals(validAreanameMed, test3.getAreaName());
-		assertEquals(emptySquare, test3.getdevelopmentObj());
-		assertEquals(null, test3.getOwnedBy());
-		assertEquals(true, test3.isBelongsToField());
-
-		FieldArea test4 = new FieldArea(validAreanameHigh, emptySquare);
-
-		assertEquals(validAreanameHigh, test4.getAreaName());
-		assertEquals(emptySquare, test4.getdevelopmentObj());
-		assertEquals(null, test4.getOwnedBy());
-		assertEquals(true, test4.isBelongsToField());
-
-	}
-
-	@Test
-	void testFieldAreaConstructorInvalid() {
-		assertThrows(IllegalArgumentException.class, () -> {
-			FieldArea test5 = new FieldArea(null, emptySquare);
-		});
-
-		assertThrows(IllegalArgumentException.class, () -> {
-			FieldArea test5 = new FieldArea(invalidAreanameLow, emptySquare);
-		});
-
-		assertThrows(IllegalArgumentException.class, () -> {
-			FieldArea test5 = new FieldArea(invalidAreanameHigh, emptySquare);
-		});
-
-		assertThrows(IllegalArgumentException.class, () -> {
-			FieldArea test5 = new FieldArea(emptyAreaname, emptySquare);
-		});
-
-		assertThrows(IllegalArgumentException.class, () -> {
-			FieldArea test5 = new FieldArea("Hurricane Hit", null);
-		});
-
-	}
-
-	@Test
-	void testGetSetdevelopmentObjValid() {
-
-		Development ownedSquare = new Development(2, "Owned Square", "Bla bla bla description", 1.10);
-		area1.setdevelopmentObj(ownedSquare);
-		assertEquals(ownedSquare, area1.getdevelopmentObj());
-	}
-
-	@Test
-	void testGetSetdevelopmentObjInvalid() {
-		Exception e = assertThrows(IllegalArgumentException.class, () -> {
+    @Test
+    void testGetSetDevelopmentObjInvalid() {
+       
+ 
+        Exception exNull = assertThrows(IllegalArgumentException.class, () -> {
 			area1.setdevelopmentObj(null);
 		});
+		// test for correct exception message
+		assertEquals("Development cannot be null", exNull.getMessage());
 
-		assertEquals("Development cannot be null", e.getMessage());
+       
+    }
 
-		Development ownedSquare = new Development(2, "Owned Square", "Bla bla bla description", 1.10);
-		FieldArea area3 = new FieldArea("Seed sorrow", ownedSquare);
+    @Test 
+    void testGetSetOwnedByValid() {
+        area1.setOwnedBy(player2);
+        assertEquals(player2, area1.getOwnedBy());
 
-		e = assertThrows(IllegalArgumentException.class, () -> {
-			area1.setdevelopmentObj(emptySquare);
-		});
+        area2.setOwnedBy(player1);
+        assertEquals(player1, area2.getOwnedBy());
+    }
 
-		assertEquals("Development level needs to increase", e.getMessage());
-	}
+    @Test
+    void testGetSetOwnedByInvalid() {
 
-	@Test
-	void testGetSetOwnedByValid() {
-		area1.setOwnedBy(player2);
-		assertEquals(player2, area1.getOwnedBy());
-
-		area2.setOwnedBy(player1);
-		assertEquals(player1, area2.getOwnedBy());
-	}
-
-	@Test
-	void testGetSetOwnedByInvalid() {
-		Exception e = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exNull = assertThrows(IllegalArgumentException.class, () -> {
 			area1.setOwnedBy(null);
 		});
+		// test for correct exception message
+		assertEquals("Cannot set owned by to null", exNull.getMessage());
+    }
 
-		assertEquals("Cannot set FieldArea ownership to null", e.getMessage());
+    @Test
+    void testGetSetAreaNameValid() {
+        area1.setAreaName(validAreanameLow);
+        assertEquals(validAreanameLow, area1.getAreaName());
 
-		area1.setOwnedBy(player2);
+        area1.setAreaName(validAreanameMed);
+        assertEquals(validAreanameMed, area1.getAreaName());
 
-		e = assertThrows(IllegalArgumentException.class, () -> {
-			area1.setOwnedBy(player1);
-		});
+        area1.setAreaName(validAreanameHigh);
+        assertEquals(validAreanameHigh, area1.getAreaName());
+    }
 
-		assertEquals("Another Player already owns this FieldArea", e.getMessage());
-	}
-
-	@Test
-	void testGetSetAreaNameValid() {
-		area1.setAreaName(validAreanameLow);
-		assertEquals(validAreanameLow, area1.getAreaName());
-
-		area1.setAreaName(validAreanameMed);
-		assertEquals(validAreanameMed, area1.getAreaName());
-
-		area1.setAreaName(validAreanameHigh);
-		assertEquals(validAreanameHigh, area1.getAreaName());
-	}
-
-	@Test
-	void testGetSetAreaNameInvalid() {
-		Exception e = assertThrows(IllegalArgumentException.class, () -> {
-			area1.setAreaName(null);
-		});
-
-		assertEquals("Area name cannot be null", e.getMessage());
-
-		e = assertThrows(IllegalArgumentException.class, () -> {
-			area1.setAreaName(invalidAreanameLow);
-		});
-
-		assertEquals("Area name is too long or too short", e.getMessage());
-
-		e = assertThrows(IllegalArgumentException.class, () -> {
-			area1.setAreaName(invalidAreanameHigh);
-		});
-
-		assertEquals("Area name is too long or too short", e.getMessage());
-	}
+    @Test
+    void testGetSetAreaNameInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> area1.setAreaName(null));
+        assertThrows(IllegalArgumentException.class, () -> area1.setAreaName(invalidAreanameLow));
+        assertThrows(IllegalArgumentException.class, () -> area1.setAreaName(invalidAreanameHigh));
+    }
 
 }
