@@ -929,8 +929,8 @@ public class Game {
 				"Climate change is wreaking havoc across the globe with increasing extreme weather, biodiversity loss, rising seas, and much more.");
 		System.out.println(
 				"With each roll of the dice, you'll face critical decisions and strategic choices, from protecting endangered species to supporting reforestation efforts.");
-		System.out.println(
-				"Invest your eco tokens wisely, convincing your fellow players to donate to eco-friendly causes.");
+		System.out.printf(
+				"Invest your eco tokens wisely, convincing your fellow players to donate to eco-friendly causes.  First to %d eco tokens wins!!%n", ENDGAME_VALUE);
 		System.out.println("Will you rise to the challenge and become a champion of sustainability?");
 		System.out.println();
 		System.out.println("Please enter number of players:");
